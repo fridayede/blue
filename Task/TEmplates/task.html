@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task</title>
+
+    <link rel="stylesheet" href="task.css">
+
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+        <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <style>
+
+        html,
+        body{
+            height:100%;
+            margin:0;
+            padding:0;
+        }
+
+        body{
+            display:flex;
+            flex-direction:column;
+            min-height:100vh;
+            background:#fff;
+        }
+
+        /* Main page */
+        .main-content{
+            flex:1;
+            padding-bottom:100px;
+        }
+
+        /* Header */
+        .top-title{
+            display:flex;
+            flex-direction:column;
+            justify-content:center;
+            align-items:center;
+            margin:12px;
+            padding:12px;
+            text-align:center;
+            font-family:Arial, sans-serif;
+        }
+
+        .top-title h2{
+            font-size:28px;
+            margin-bottom:10px;
+        }
+
+        .top-title p{
+            font-size:18px;
+            margin:0;
+        }
+
+        /* Icon section */
+        .icon-box{
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            margin-top:20px;
+            margin-bottom:20px;
+        }
+
+        .task-icon{
+            font-size:70px;
+        }
+
+        /* Description */
+        .task-description{
+            text-align:center;
+            padding:15px;
+            font-size:16px;
+            line-height:1.7;
+        }
+
+        /* Button section */
+        .btn-box{
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            margin-top:25px;
+        }
+
+        .task-btn{
+            background:linear-gradient(
+                135deg,
+                #06152B,
+                #0A1F3F,
+                #003B6F,
+                #00CFFF,
+                #4DEBFF
+            );
+
+            color:#ebdddd !important;
+            width:60%;
+            border:none;
+            border-radius:15px;
+            padding:12px;
+            text-decoration:none;
+            text-align:center;
+            font-weight:bold;
+            font-size:18px;
+        }
+
+        .task-btn:hover{
+            opacity:0.9;
+        }
+
+        /* Footer */
+        footer{
+            width:100%;
+            margin-top:auto;
+        }
+
+        /* Mobile */
+        @media(max-width:768px){
+
+            .task-icon{
+                font-size:55px;
+            }
+
+            .task-btn{
+                width:85%;
+            }
+
+            .top-title h2{
+                font-size:24px;
+            }
+
+            .top-title p{
+                font-size:16px;
+            }
+
+            .task-description{
+                font-size:15px;
+            }
+        }
+
+        /* iPad */
+        @media(min-width:769px) and (max-width:1024px){
+
+            .task-btn{
+                width:70%;
+            }
+
+            .task-icon{
+                font-size:65px;
+            }
+        }
+
+
+       
+    </style>
+
+</head>
+
+<body>
+    {% if messages %}
+{% for message in messages %}
+<div class="alert 
+    {% if message.tags == 'error' %} alert-danger
+    {% elif message.tags == 'success' %} alert-success
+    {% elif message.tags == 'warning' %} alert-warning
+    {% else %} alert-info
+    {% endif %}
+    alert-dismissible fade show"
+    
+    role="alert"
+    
+    style="
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        min-width: 250px;
+    ">
+
+  <strong style="
+    {% if message.tags == 'error' %} color: red;
+    {% elif message.tags == 'success' %} color: green;
+    {% elif message.tags == 'warning' %} color: orange;
+    {% else %} color: blue;
+    {% endif %}
+  ">
+      {{ message }}
+  </strong>
+
+  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endfor %}
+{% endif %}
+
+    <div class="main-content">
+
+        <!-- Title -->
+        <div class="top-title">
+
+            <h2>Available Task</h2>
+
+            <p>
+                Complete any task and receive instant rewards!
+            </p>
+
+        </div>
+
+        <!-- Icon -->
+        <div class="icon-box">
+
+            {% if ad.ad_type == "telegram" %}
+
+                <i class="bi bi-telegram task-icon"
+                    style="color:#0088cc;"></i>
+
+            {% elif ad.ad_type == "youtube" %}
+
+                <i class="bi bi-youtube task-icon"
+                    style="color:red;"></i>
+
+            {% elif ad.ad_type == "website" %}
+
+                <i class="bi bi-globe task-icon"
+                    style="color:#0d6efd;"></i>
+
+            {% elif ad.ad_type == "instagram" %}
+
+                <i class="bi bi-instagram task-icon"
+                    style="color:#E1306C;"></i>
+
+            {% elif ad.ad_type == "tiktok" %}
+
+                <i class="bi bi-tiktok task-icon"
+                    style="color:black;"></i>
+
+            {% endif %}
+
+        </div>
+
+        <!-- Task title -->
+        <div class="text-center">
+
+            <h3>{{ ad.title }}</h3>
+
+            <p>
+
+    Reward:
+
+    <strong>
+
+        {{ ad.reward }}
+
+        {% if ad.reward_type == "blue" %}
+
+            <span style="color:#00CFFF;">
+                <img src="{% static "image/image.png" %}" alt="Blue" style="width: 39px;" class="rounded-circle">
+            </span>
+
+        {% elif ad.reward_type == "point" %}
+
+            <span style="color:orange;">
+                <img src="{% static "image/reward2.webp" %}" alt="Point" style="width: 49px;">
+            </span>
+
+        {% elif ad.reward_type == "usdt" %}
+
+
+            <span style="color:green;">
+                <img src="{% static "image/usdt.webp" %}" alt="USDT" style="width: 49px;">
+            </span>
+
+        {% endif %}
+
+    </strong>
+
+</p>
+
+        </div>
+
+        <!-- Description -->
+        <div class="task-description container">
+
+            Lorem ipsum dolor sit amet consectetur adipisicing elit.
+            Hic repudiandae soluta necessitatibus tempora non.
+            Sunt voluptate veniam ducimus voluptatibus incidunt.
+
+        </div>
+
+        <!-- Button -->
+        <div class="btn-box">
+
+           
+
+     
+    <a
+        href="{{ ad.link }}"
+        target="_blank"
+        class="task-btn"
+        onclick="showForm(event)"
+         >
+        START TASK
+    </a>
+        
+
+        </div>
+
+    </div>
+
+  
+
+{% comment %} </form> {% endcomment %} 
+<div style="display:flex; justify-content:center; align-items:center; margin-bottom:50px;">
+
+    <form id="myForm"  style="
+            display:none;
+            margin-top:20px;
+            background:white;
+            padding:25px;
+            border-radius:20px;
+            box-shadow:0 4px 15px rgba(0,0,0,0.15);
+            width:320px;
+            cursor:pointer;
+        " 
+        method="POST"
+        >
+        {% csrf_token %}
+
+        <input 
+          style="
+                width:100%;
+                padding:12px;
+                border:none;
+                border-radius:12px;
+                background:#f2f2f2;
+                margin-bottom:15px;
+                outline:none;
+                font-size:16px;
+                cursor:pointer;
+                box-sizing:border-box;
+            "
+            type="text" 
+            placeholder="Enter your name"
+            style="cursor:pointer;"
+            id="nameInput"
+            name="user_answer"
+        >
+
+        <button 
+            type="submit"
+            style="cursor:pointer;
+            width:100%;
+                padding:12px;
+                border:none;
+                border-radius:12px;
+                background:#007bff;
+                color:white;
+                font-size:16px;
+                font-weight:bold;
+                cursor:pointer;
+                transition:0.3s;
+            
+            "
+            onmouseover="this.style.background='#0056b3'"
+            onmouseout="this.style.background='#007bff'"
+        >
+            Submit
+        </button>
+
+    </form>
+
+</div>
+
+    <!-- Footer -->
+    <footer>
+
+        {% include "foot/footer.html" %}
+
+    </footer>
+    <script>
+   
+     
+
+function showForm(event){
+
+    
+
+        document.getElementById("myForm").style.display = "block";
+
+        localStorage.setItem("formVisible", "true");
+    
+    
+}
+
+window.onload = function(){
+
+    const form = document.getElementById("myForm");
+    const input = document.getElementById("nameInput");
+
+    if(localStorage.getItem("formVisible") === "true"){
+
+        document.getElementById("myForm").style.display = "block";
+        
+
+    }
+
+
+}
+   // submit form
+document.getElementById("myForm").addEventListener("submit", function(event){
+
+    const input = document.getElementById("nameInput").value.trim();
+
+    // check if user typed something
+    if(input !== ""){
+
+        // hide form
+        document.getElementById("myForm").style.display = "none";
+
+        // remove saved state
+        localStorage.removeItem("formVisible");
+
+    }
+
+});
+
+
+
+
+
+    </script>
+
+</body>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+</html>

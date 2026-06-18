@@ -1,0 +1,107 @@
+{% extends "layout.html" %}
+{% load static %}
+{% block title %}
+Register
+{% endblock title %}
+
+{% block content %}
+{% if messages %}
+{% for message in messages %}
+<div class="alert 
+    {% if message.tags == 'error' %} alert-danger
+    {% elif message.tags == 'success' %} alert-success
+    {% elif message.tags == 'warning' %} alert-warning
+    {% else %} alert-info
+    {% endif %}
+    alert-dismissible fade show"
+    
+    role="alert"
+    
+    style="
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        min-width: 250px;
+    ">
+
+  <strong style="
+    {% if message.tags == 'error' %} color: red;
+    {% elif message.tags == 'success' %} color: green;
+    {% elif message.tags == 'warning' %} color: orange;
+    {% else %} color: blue;
+    {% endif %}
+  ">
+      {{ message }}
+  </strong>
+
+  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endfor %}
+{% endif %}
+<div class="page">
+
+    <div class="formconterner">
+
+        <div class="login"><strong>REGISTER</strong></div>
+
+        <div class="form">
+            <form action="{% url 'Account:register' %}" method="post">
+                {% csrf_token %}
+
+                <div class="input-group">
+                    <label>Email</label>
+                    <input type="email" placeholder="Enter your email" required name="email">
+                </div>
+
+                <div class="input-group password-group">
+                    <label>Password</label>
+                    <input type="password" id="login-password" placeholder="Enter your password" required name="password">
+                    <i class="bi bi-eye-slash" id="togglePassword"></i>
+                </div>
+
+                <div class="input-group password-group">
+                    <label>Confirm Password</label>
+                    <input type="password" id="confirm-password" placeholder="Confirm your password" required name="confirm_password">
+                    <i class="bi bi-eye-slash" id="toggleConfirmPassword"></i>
+                </div>
+
+                <div class="btn-box">
+                    <button type="submit" class="btn"><strong>Register </strong></button>
+                </div>
+
+            </form>
+            <p style="text-align: center;"> have an account? <a href="{% url 'Account:login' %}">Login</a></p>
+        </div>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+<script>
+function toggleVisibility(inputId, iconId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(iconId);
+
+    icon.addEventListener("click", function () {
+        input.type = input.type === "password" ? "text" : "password";
+
+        this.classList.toggle("bi-eye");
+        this.classList.toggle("bi-eye-slash");
+    });
+}
+
+toggleVisibility("login-password", "togglePassword");
+toggleVisibility("confirm-password", "toggleConfirmPassword");
+</script>
+{% endblock content %}
+
+
+
+
+

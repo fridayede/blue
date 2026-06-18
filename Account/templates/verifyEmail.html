@@ -1,0 +1,71 @@
+{% extends "layout.html" %}
+{% load static %}
+{% block title %}Verify Email{% endblock title %}
+
+{% block content %}
+{% if messages %}
+{% for message in messages %}
+<div class="alert 
+    {% if message.tags == 'error' %} alert-danger
+    {% elif message.tags == 'success' %} alert-success
+    {% elif message.tags == 'warning' %} alert-warning
+    {% else %} alert-info
+    {% endif %}
+    alert-dismissible fade show"
+    
+    role="alert"
+    
+    style="
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        min-width: 250px;
+    ">
+
+  <strong style="
+    {% if message.tags == 'error' %} color: red;
+    {% elif message.tags == 'success' %} color: green;
+    {% elif message.tags == 'warning' %} color: orange;
+    {% else %} color: blue;
+    {% endif %}
+  ">
+      {{ message }}
+  </strong>
+
+  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endfor %}
+{% endif %}
+<div class="page">
+    
+
+    <div class="formconterner">
+
+        <div class="login"><strong>VERIFY EMAIL</strong></div>
+
+        <div class="form">
+            <form action="{% url 'Account:verifyEmail' %}" method="post">
+                {% csrf_token %}
+
+                
+
+                <div class="input-group password-group">
+                    <label>Verification Code</label>
+                    <input type="text" placeholder="Enter verification code" required name="verification_code">
+                </div>
+
+                <div class="btn-box">
+                    <button type="submit" class="btn"><strong>Submit</strong></button>
+                </div>
+
+            </form>
+        </div>
+        
+        
+    </div>
+
+ 
+</div>
+
+{% endblock content %}

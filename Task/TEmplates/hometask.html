@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="task.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+    <style>
+        html,
+body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Push footer down */
+.clambtn {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    padding-bottom: 100px;
+}
+
+/* Footer fixed at bottom */
+footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 10px;
+    z-index: 1000;
+}
+
+/* Responsive image */
+.clambtn img {
+    width: 70vw;
+    height: 70vw;
+    max-width: 20rem;
+    max-height: 20rem;
+}
+    </style>
+    {% if messages %}
+{% for message in messages %}
+<div class="alert 
+    {% if message.tags == 'error' %} alert-danger
+    {% elif message.tags == 'success' %} alert-success
+    {% elif message.tags == 'warning' %} alert-warning
+    {% else %} alert-info
+    {% endif %}
+    alert-dismissible fade show"
+    
+    role="alert"
+    
+    style="
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        min-width: 250px;
+    ">
+
+  <strong style="
+    {% if message.tags == 'error' %} color: red;
+    {% elif message.tags == 'success' %} color: green;
+    {% elif message.tags == 'warning' %} color: orange;
+    {% else %} color: blue;
+    {% endif %}
+  ">
+      {{ message }}
+  </strong>
+
+  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endfor %}
+{% endif %}
+
+    <div>
+        <div style="
+            justify-content: center;
+            align-items: center;
+            display: flex;
+            font-size: 24px;
+            font-family: Arial, sans-serif;
+            margin: 12px;
+            padding: 12px;
+
+            ">
+            <p>Avaliable task</p>
+        </div>
+        <div style="
+            justify-content: center;
+            align-items: center;
+            display: flex;
+            font-size: 18px;
+            font-family: Arial, sans-serif;
+            margin: 12px;
+            padding: 12px;
+
+            ">
+            <p>Complete any task and receive instant rewards!</p>
+        </div>
+
+        
+    
+        <ul class="nav nav-pills nav-fill gap-2 p-1 small  rounded-5 shadow-sm" id="pillNav2" role="tablist"
+        style="background:  linear-gradient(135deg, #06152B, #0A1F3F, #003B6F, #00CFFF, #4DEBFF);"
+        style="--bs-nav-link-color: var(--bs-white); --bs-nav-pills-link-active-color: var(--bs-primary); --bs-nav-pills-link-active-bg: var(--bs-white);" >
+
+        
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active rounded-5" id="home-tab2" data-bs-toggle="tab" type="button" role="tab" aria-selected="true">Task</button>
+            </li>
+        
+
+        
+            <li class="nav-item" role="presentation">
+                <button class="nav-link rounded-5" id="profile-tab2" data-bs-toggle="tab" type="button" role="tab" aria-selected="false">Point</button>
+            </li>
+        
+
+            <li class="nav-item" role="presentation">
+                    <a href="{% url 'Task:complect' %}" class="nav-link rounded-5 {% if request.path == '/Task/complect/' %}active{% endif %}">complet</a></li>
+        </ul>
+
+    
+
+
+        
+
+
+        {% for ad in ads %}
+        
+
+<div class="ad-card">
+
+    {% if ad.ad_type == "telegram" %}
+         <div style="
+            display: flex;
+            margin: 20px;
+            border-radius: 12px;
+            /* border: 1.5px solid #1a1a1a; */
+            justify-content: space-between;
+            
+            "
+            style="background:  linear-gradient(135deg, #06152B, #0A1F3F, #003B6F, #00CFFF, #4DEBFF);"
+            >
+            <span><i class="bi bi-telegram" style="color: blue; width: 122%; font-size: 24px;"></i></span>
+            <p style="margin: 0; padding: 0;">{{ ad.title }}</p>
+            
+                <button type="submit" class="btn btn-primary" style="border-radius: 12px;" onclick="goTotaskPage({{ ad.id }})"><strong>START</strong></button>
+        </div>
+
+    {% elif ad.ad_type == "youtube" %}
+
+
+     <div style="
+            display: flex;
+            margin: 20px;
+            border-radius: 12px;
+            /* border: 1.5px solid #1a1a1a; */
+            justify-content: space-between;
+            
+            "
+            style="background:  linear-gradient(135deg, #06152B, #0A1F3F, #003B6F, #00CFFF, #4DEBFF);"
+            >
+            <span><i class="bi bi-youtube" style="color: red; width: 122%; font-size: 24px;"></i></span>
+            <p style="margin: 0; padding: 0;">{{ ad.title }}</p>
+                <button type="submit" class="btn btn-primary" style="border-radius: 12px;" onclick="goTotaskPage({{ ad.id }})"><strong>START</strong></button>
+            
+        </div>
+        
+
+    {% elif ad.ad_type == "website" %}
+     <div style="
+            display: flex;
+            margin: 20px;
+            border-radius: 12px;
+            /* border: 1.5px solid #1a1a1a; */
+            justify-content: space-between;
+            
+            "
+            style="background:  linear-gradient(135deg, #06152B, #0A1F3F, #003B6F, #00CFFF, #4DEBFF);"
+            >
+            <span><i class="bi bi-globe" style=" width: 122%; font-size: 24px;"></i></span>
+            <p style="margin: 0; padding: 0;">{{ ad.title }}</p>
+                <button type="submit" class="btn btn-primary" style="border-radius: 12px;" onclick="goTotaskPage({{ ad.id }})"><strong>START</strong></button>
+            
+        </div>
+        
+
+    {% elif ad.ad_type == "instagram" %}
+     <div style="
+            display: flex;
+            margin: 20px;
+            border-radius: 12px;
+            /* border: 1.5px solid #1a1a1a; */
+            justify-content: space-between;
+            
+            "
+            style="background:  linear-gradient(135deg, #06152B, #0A1F3F, #003B6F, #00CFFF, #4DEBFF);"
+            >
+            <span><i class="bi bi-instagram" style="color: pink; width: 122%; font-size: 24px;"></i></span>
+            <p style="margin: 0; padding: 0;">{{ ad.title }}</p>
+                <button type="submit" class="btn btn-primary" style="border-radius: 12px;" onclick="goTotaskPage({{ ad.id }})"><strong>START</strong></button>
+            
+        </div>
+        
+
+    {% elif ad.ad_type == "tiktok" %}
+    <div style="
+            display: flex;
+            margin: 20px;
+            border-radius: 12px;
+            /* border: 1.5px solid #1a1a1a; */
+            justify-content: space-between;
+            
+            "
+            style="background:  linear-gradient(135deg, #06152B, #0A1F3F, #003B6F, #00CFFF, #4DEBFF);"
+            >
+            <span><i class="bi bi-tiktok" style="color: black; width: 122%; font-size: 24px;"></i></span>
+            <p style="margin: 0; padding: 0;">{{ ad.title }}</p>
+            
+                <button type="submit" class="btn btn-primary" style="border-radius: 12px;" onclick="goTotaskPage({{ ad.id }})"><strong>START</strong></button>
+        </div>
+        
+
+    {% endif %}
+
+    {% comment %} <h3>{{ ad.title }}</h3> {% endcomment %}
+    {% comment %} <h5><a href="{{ ad.link }}" target="_blank">{{ ad.link }}</a></h5> {% endcomment %}
+
+    {% comment %} <p>Reward: {{ ad.reward }}</p> {% endcomment %}
+
+</div>
+
+{% endfor %}
+
+
+
+
+
+{% comment %}  
+{% for ad in ads %}
+
+<div class="ad-card">
+
+    {% if ad.ad_type == "telegram" %}
+        <i class="bi bi-telegram"></i>
+
+    {% elif ad.ad_type == "youtube" %}
+        <i class="bi bi-youtube"></i>
+
+    {% elif ad.ad_type == "website" %}
+        <i class="bi bi-globe"></i>
+
+    {% elif ad.ad_type == "instagram" %}
+        <i class="bi bi-instagram"></i>
+
+    {% elif ad.ad_type == "tiktok" %}
+        <i class="bi bi-tiktok"></i>
+
+    {% endif %}
+
+    <h3>{{ ad.title }}</h3>
+    <h5><a href="{{ ad.link }}" target="_blank">{{ ad.link }}</a></h5>
+
+    <p>Reward: {{ ad.reward }}</p>
+
+</div>
+
+{% endfor %} {% endcomment %}
+
+
+    
+
+        {% comment %} {% include "foot/footer.html" %} {% endcomment %}
+        <footer>
+            {% include "foot/footer.html" %}
+        </footer>
+    </div>
+</body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+
+<script>
+    {% comment %} document.getElementById('taskForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        // Handle form submission
+    }); {% endcomment %}
+
+
+
+    function goTotaskPage(id) {
+        window.location.href = "/Task/task/" + id + "/";
+    }
+</script>
+</html>

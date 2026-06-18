@@ -1,0 +1,301 @@
+{% extends "main.html" %}
+{% load static %}
+
+{% block content %}
+
+
+
+
+
+<style>
+   body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* ✅ prevents scrolling */
+    background: #06152B;
+}
+
+    .topamont {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px;
+    }
+
+    .clambtn {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+    }
+
+
+    {% comment %} new {% endcomment %}
+    html,
+body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background: #06152B;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Push footer down */
+.clambtn {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    padding-bottom: 100px;
+}
+
+/* Footer fixed at bottom */
+footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 10px;
+    z-index: 1000;
+}
+
+/* Responsive image */
+.clambtn img {
+    width: 70vw;
+    height: 70vw;
+    max-width: 20rem;
+    max-height: 20rem;
+}
+</style>
+
+
+
+{% if messages %}
+{% for message in messages %}
+<div class="alert 
+    {% if message.tags == 'error' %} alert-danger
+    {% elif message.tags == 'success' %} alert-success
+    {% elif message.tags == 'warning' %} alert-warning
+    {% else %} alert-info
+    {% endif %}
+    alert-dismissible fade show"
+    
+    role="alert"
+    
+    style="
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        min-width: 250px;
+    ">
+
+  <strong style="
+    {% if message.tags == 'error' %} color: red;
+    {% elif message.tags == 'success' %} color: green;
+    {% elif message.tags == 'warning' %} color: orange;
+    {% else %} color: blue;
+    {% endif %}
+  ">
+      {{ message }}
+  </strong>
+
+  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endfor %}
+{% endif %}
+
+
+
+<div class="topamont" style="background: linear-gradient(135deg, #06152B, #0A1F3F, #003B6F, #00CFFF, #4DEBFF);">
+
+    <!-- ✅ FIXED STATIC -->
+     
+      <a href="{% url "Withdraw:withdraw" %}">
+          <img src="{% static 'image/OIP.Webp' %}" 
+          style="width:3rem; height:3rem;" 
+          class="rounded-circle">
+        </a>
+    
+
+    <span style="display:flex; align-items:center; gap:10px;">
+        <img src="{% static 'image/image.png' %}" 
+             style="width:3rem; height:3rem;" 
+             class="rounded-circle">
+
+    
+        <p id="earn">{{clicks }}</p>
+    </span>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress" style="background:#0A1F3F;">
+    <div class="progress-bar" id="progressBar" style="width:0%"></div>
+</div>
+
+<div id="timerDisplay" style="text-align:center; margin-top:15px;">
+    Click to Start Earning
+</div>
+
+<!-- FORM -->
+<form method="post" id="clamForm">
+    {% csrf_token %}
+
+    <div class="clambtn">
+        <input type="hidden" name="clicks" id="clickInput">
+        <button type="button" class="btn" id="click">
+            <img src="{% static 'image/image.png' %}"
+                 style="border-radius:17px; width:20rem; height:20rem;"
+                 class="rounded-circle">
+        </button>
+    </div>
+</form>
+
+<div 
+style=" position: fixed;
+    bottom: 150px;
+    left: 135px;
+    z-index: 1100;">
+        <li class="nav-item" role="presentation" style="position: absolute; top: 1rem; left: 1rem; list-style: none;">
+                    <a href="{% url 'RE:referral' %}" class="nav-link rounded-5 {% if request.path == '/RE/referral/' %}active{% endif %}"><i class="fa-solid fa-user-group " style="font-size:2rem; "></i> referral</a></li>
+</div>
+
+
+<script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        const clickButton = document.getElementById('click');
+const timerElement = document.getElementById('timerDisplay');
+const progressBar = document.getElementById('progressBar');
+const earnElement = document.getElementById('earn');
+
+let clicks = parseInt(earnElement.textContent) || 0;
+
+const TOTAL_TIME = 4 * 60 * 60; // 4 hours
+let timerInterval;
+
+function formatTime(seconds) {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+
+    return `${hours.toString().padStart(2, '0')}:${
+        minutes.toString().padStart(2, '0')
+    }:${secs.toString().padStart(2, '0')}`;
+}
+
+function updateProgress(timeLeft) {
+    const percentage = ((TOTAL_TIME - timeLeft) / TOTAL_TIME) * 100;
+    progressBar.style.width = percentage + '%';
+}
+
+function startCountdown() {
+
+    clearInterval(timerInterval);
+
+    timerInterval = setInterval(() => {
+
+        const endTime = localStorage.getItem('claimEndTime');
+
+        if (!endTime) {
+            clearInterval(timerInterval);
+            timerElement.textContent = 'Click to Start';
+            return;
+        }
+
+        const now = Math.floor(Date.now() / 1000);
+        let timeLeft = parseInt(endTime) - now;
+
+        if (timeLeft <= 0) {
+            timerElement.textContent = '00:00:00';
+            progressBar.style.width = '100%';
+            clearInterval(timerInterval);
+            return;
+        }
+
+        timerElement.textContent = formatTime(timeLeft);
+        updateProgress(timeLeft);
+
+    }, 1000);
+}
+
+/*
+    PAGE LOAD
+*/
+const savedEndTime = localStorage.getItem('claimEndTime');
+
+if (savedEndTime) {
+
+    const now = Math.floor(Date.now() / 1000);
+
+    if (parseInt(savedEndTime) > now) {
+        startCountdown();
+    } else {
+        timerElement.textContent = '00:00:00';
+    }
+
+} else {
+    timerElement.textContent = 'Click to Start';
+}
+
+/*
+    BUTTON CLICK
+*/
+clickButton.addEventListener('click', function () {
+
+    const endTime = localStorage.getItem('claimEndTime');
+    const now = Math.floor(Date.now() / 1000);
+
+    // First start
+    if (!endTime) {
+
+        const newEndTime = now + TOTAL_TIME;
+
+        localStorage.setItem('claimEndTime', newEndTime);
+
+        startCountdown();
+
+        return;
+    }
+
+    // Timer finished
+    if (now >= parseInt(endTime)) {
+
+        clicks++;
+
+        earnElement.textContent = clicks;
+
+        document.getElementById("clickInput").value = clicks;
+
+        const newEndTime = now + TOTAL_TIME;
+
+        localStorage.setItem('claimEndTime', newEndTime);
+
+        document.getElementById("clamForm").submit();
+
+        startCountdown();
+    }
+});
+
+    </script>
+
+{% endblock content %}

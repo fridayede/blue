@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Swap Page</title>
+
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f4f7fb;
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .wallet-card {
+            max-width: 500px;
+            margin: auto;
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        .top-title {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .top-title h2 {
+            font-size: 30px;
+            font-weight: bold;
+            color: #06152B;
+        }
+
+        .balance-text {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .balance-text h4 {
+            font-size: 18px;
+            color: #666;
+        }
+
+        .balance-amount {
+            font-size: 28px;
+            font-weight: bold;
+            color: #06152B;
+        }
+
+        .balance-box {
+            background: linear-gradient(135deg,
+                    #06152B,
+                    #0A1F3F,
+                    #003B6F,
+                    #00CFFF,
+                    #4DEBFF);
+            border-radius: 20px;
+            padding: 18px;
+            margin-bottom: 25px;
+        }
+
+        .balance-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: white;
+            margin-bottom: 12px;
+        }
+
+        .balance-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .balance-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .balance-left img {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .swap-box {
+            background: #f8f9fd;
+            border-radius: 20px;
+            padding: 20px;
+            position: relative;
+        }
+
+        .currency-box {
+            background: white;
+            border-radius: 18px;
+            padding: 15px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .currency-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .currency-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .currency-left img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+        }
+
+        .currency-name {
+            font-weight: bold;
+            font-size: 17px;
+            color: #06152B;
+        }
+
+        .currency-input {
+            border: none;
+            outline: none;
+            text-align: right;
+            font-size: 24px;
+            font-weight: bold;
+            width: 120px;
+            background: transparent;
+        }
+
+        .swap-btn-wrapper {
+            display: flex;
+            justify-content: center;
+            margin: -10px 0;
+            position: relative;
+            z-index: 2;
+        }
+
+        .swap-btn {
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            border: 5px solid white;
+            background: linear-gradient(135deg,
+                    #06152B,
+                    #0A1F3F,
+                    #003B6F,
+                    #00CFFF,
+                    #4DEBFF);
+            color: white;
+            font-size: 24px;
+            transition: 0.3s;
+        }
+
+        {% comment %} .swap-btn:hover {
+            transform: rotate(180deg) scale(1.05);
+        } {% endcomment %}
+
+        .fee-box {
+            margin-top: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .swap-submit {
+            width: 100%;
+            border: none;
+            margin-top: 30px;
+            padding: 15px;
+            border-radius: 18px;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            background: linear-gradient(135deg,
+                    #06152B,
+                    #0A1F3F,
+                    #003B6F,
+                    #00CFFF,
+                    #4DEBFF);
+            transition: 0.3s;
+        }
+
+        .swap-submit:hover {
+            transform: translateY(-2px);
+            opacity: 0.95;
+        }
+
+        @media (max-width: 768px) {
+
+            body {
+                padding: 12px;
+            }
+
+            .wallet-card {
+                padding: 18px;
+                border-radius: 20px;
+            }
+
+            .top-title h2 {
+                font-size: 24px;
+            }
+
+            .balance-amount {
+                font-size: 22px;
+            }
+
+            .currency-input {
+                width: 90px;
+                font-size: 20px;
+            }
+
+            .swap-btn {
+                width: 58px;
+                height: 58px;
+                font-size: 20px;
+            }
+
+            .balance-left img,
+            .currency-left img {
+                width: 42px;
+                height: 42px;
+            }
+
+            .currency-name {
+                font-size: 15px;
+            }
+
+            .swap-submit {
+                padding: 13px;
+                font-size: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+
+            .currency-top {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+
+            .currency-input {
+                width: 100%;
+                text-align: left;
+            }
+
+            .balance-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="wallet-card">
+
+        <div class="top-title">
+            <h2>Account</h2>
+        </div>
+
+        <div class="balance-text">
+            <h4>
+
+                {{ user}} 
+            </h4>
+            <div class="balance-amount">$12,450.00</div>
+        </div>
+
+        <!-- BALANCE BOX -->
+        <div class="balance-box">
+
+            <div class="balance-item">
+                <div class="balance-left">
+                    <img src="{% static 'image/image.png' %}" 
+                    style="width:3rem; height:3rem;" 
+                    class="rounded-circle">
+                    <span>Blue</span>
+                </div>
+
+                <strong>{{ clicks }}</strong>
+            </div>
+
+            <div class="balance-item">
+                <div class="balance-left">
+                    <img src="{% static 'image/reward2.webp' %}" 
+                    style="width:3rem; height:3rem;" 
+                    class="rounded-circle">
+                    <span>Point</span>
+                </div>
+
+            <strong>{{ total_amont }}</strong>
+            </div>
+
+            <div class="balance-item">
+                <div class="balance-left">
+                    <img src="{% static 'image/usdt.webp' %}" 
+                        style="width:3rem; height:3rem;" 
+                        class="rounded-circle">
+                    <span>USDT</span>
+                </div>
+
+                <strong>{{ swap.usdt }}</strong>
+            </div>
+
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+
+    <div class="swap-box">
+
+        <!-- FROM -->
+        <div class="currency-box">
+
+            <div class="currency-top">
+
+                <div class="currency-left">
+                    <img src="{% static 'image/reward2.webp' %}" 
+                     style="width:3rem; height:3rem;" 
+                    class="rounded-circle">
+
+                    <div>
+                        <div class="currency-name">Point</div>
+                        <small>Point</small>
+                    </div>
+                </div>
+
+                <!-- POINT INPUT -->
+                <input type="number"
+                    id="pointInput"
+                    name="swap_points"
+                    class="currency-input"
+                    placeholder="0.00">
+
+            </div>
+
+        </div>
+
+        <!-- SWAP BUTTON -->
+        <div class="swap-btn-wrapper">
+
+            <button type="button" class="swap-btn">
+                <i class="bi bi-arrow-down-up"></i>
+            </button>
+
+        </div>
+
+        <!-- TO -->
+        <div class="currency-box">
+
+            <div class="currency-top">
+
+                <div class="currency-left">
+                    <img src="{% static 'image/usdt.webp' %}" 
+                     style="width:3rem; height:3rem;" 
+                    class="rounded-circle">
+
+                    <div>
+                        <div class="currency-name">USDT</div>
+                        <small>Tether</small>
+                    </div>
+                </div>
+
+                <!-- USDT INPUT -->
+                <input type="number"
+                    id="usdtInput"
+                    class="currency-input"
+                    placeholder="0.00"
+                    readonly>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- FEE -->
+    <div class="fee-box">
+
+        <input type="checkbox" id="charge" required>
+
+        <label for="charge">
+            $1 charge fee
+        </label>
+
+    </div>
+
+    <!-- FREE -->
+    <div class="fee-box">
+
+        <input type="checkbox" id="charge2" required>
+
+        <label for="charge2">
+            $1 charge fee
+        </label>
+
+    </div>
+
+    <!-- SUBMIT -->
+    <button class="swap-submit">
+        Swap Now
+    </button>
+
+</form>
+    </div>
+    <footer>
+        {% include "foot/footer.html" %}
+    </footer>
+
+</body>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+      const pointInput = document.getElementById("pointInput");
+    const usdtInput = document.getElementById("usdtInput");
+
+    pointInput.addEventListener("input", function () {
+
+        let points = parseFloat(pointInput.value) || 0;
+
+        // divide by 1000
+        let usdt = points / 1000;
+
+        // display result
+        usdtInput.value = usdt.toFixed(2);
+
+    });
+</script>
+
+</html>
