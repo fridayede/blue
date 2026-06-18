@@ -22,6 +22,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='swap',
             name='swap_amount',
-            field=models.DecimalField(decimal_places=8, default=0.0, max_digits=2000000),
+            field=models.DecimalField(decimal_places=8, default=0.0, max_digits=20),
         ),
     ]
