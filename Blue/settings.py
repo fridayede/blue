@@ -114,9 +114,14 @@ WSGI_APPLICATION = 'Blue.wsgi.application'
 #     }
 # }
 DATABASES = {
-    "default": dj_database_url.parse(
-        "postgresql://postgres:Atmost09074931706@@db.jpkkvldvgoqdsjbpcqdv.supabase.co:5432/postgres"
-    )
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "postgres",
+        "USER": "postgres.jpkkvldvgoqdsjbpcqdv",
+        "PASSWORD": "Atmost09074931706@",
+        "HOST": "aws-0-eu-west-1.pooler.supabase.com",
+        "PORT": "5432",
+    }
 }
 
 

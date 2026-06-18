@@ -15,7 +15,7 @@ class Swap(models.Model):
     ads_reward = models.ForeignKey(saveAds, on_delete=models.CASCADE, null=True, blank=True)
     total_amont = models.IntegerField(default=0, editable=False)
     # amount to be swapped/// done
-    swap_amount = models.DecimalField(max_digits=2000000, decimal_places=8, default=0.0)
+    swap_amount = models.DecimalField(max_digits=100, decimal_places=8, default=0.0)
     # if the amont is more than 2.9 dollars
     available_swaps = models.IntegerField(default=0, editable=False)
     # balance in points//done
