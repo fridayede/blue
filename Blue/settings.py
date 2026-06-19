@@ -34,10 +34,10 @@ DEBUG = True
 # ALLOWED_HOSTS = []
 
 # for hosting
-# ALLOWED_HOSTS = ['*']
-ALLOWED_HOSTS = [
-    ".zeabur.app",
-]
+ALLOWED_HOSTS = ['*']
+# ALLOWED_HOSTS = [
+#     ".zeabur.app",
+# ]
 
 
 
