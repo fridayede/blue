@@ -25,3 +25,19 @@ while True:
         logging.error(f"Unexpected error: {e}")
 
     time.sleep(INTERVAL)
+
+
+
+import requests
+import time
+
+URL = "https://blue-a7ca.onrender.com/Account/login/"
+
+while True:
+    try:
+        requests.get(URL)
+        print("Ping sent")
+    except Exception as e:
+        print(e)
+
+    time.sleep(120)  # 2 minutes
