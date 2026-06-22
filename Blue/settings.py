@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     'Swap',
     'withdrawblue',
     'RE',
+    'main',
     'whitenoise.runserver_nostatic',
 ]
 
