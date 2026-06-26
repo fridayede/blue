@@ -4,7 +4,7 @@ from urllib import request
 from django.shortcuts import redirect, render
 from django.contrib import messages
 
-from Blue.Account.models import User
+from Account.models import User
 from .models import Ads,saveAds,AdAnswer
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
