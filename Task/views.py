@@ -9,6 +9,13 @@ from django.contrib.auth.decorators import login_required
 from django.db import transaction
 
 
+import uuid
+import hmac
+import hashlib
+from django.conf import settings
+from django.http import HttpResponse, JsonResponse
+
+
 
 
 
@@ -127,8 +134,18 @@ def task(request, id):
     })
 
 
+def request_ad_token(request):
+    # In a real app, get user ID from Telegram authentication
+    user_id = request.GET.get('user_id', '1')
+    ymid = str(uuid.uuid4())
+    # AdView.objects.create(user_id=user_id, ymid=ymid, status='pending')
+    return JsonResponse({'ymid': ymid})
 
 
+
+
+def point(request):
+    return render(request, "point.html")
 
 
 

@@ -126,8 +126,8 @@ footer {
         
 
         
-            <li class="nav-item" role="presentation">
-                <button class="nav-link rounded-5" id="profile-tab2" data-bs-toggle="tab" type="button" role="tab" aria-selected="false">Point</button>
+             <li class="nav-item" role="presentation">
+                 <a href="{% url 'Task:point' %}" class="nav-link rounded-5 {% if request.path == '/Task/point/' %}active{% endif %}">point</a></li>
             </li>
         
 
