@@ -129,12 +129,12 @@ footer {
 
         
             <li class="nav-item" role="presentation">
-                <button class="nav-link active rounded-5" id="home-tab2" data-bs-toggle="tab" type="button" role="tab" aria-selected="true">Task</button>
+                <a href="{% url 'Task:hometask' %}" class="nav-link rounded-5 {% if request.path == '/Task/hometask/' %}active{% endif %}">Task</a></li>
             </li>
         
 
         
-            <li class="nav-item" role="presentation">
+             <li class="nav-item" role="presentation">
                  <a href="{% url 'Task:point' %}" class="nav-link rounded-5 {% if request.path == '/Task/point/' %}active{% endif %}">point</a></li>
             </li>
         
