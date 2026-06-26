@@ -166,6 +166,9 @@ footer {
         crossorigin="anonymous"></script>
 
         <script>
+const csrftoken = document.querySelector(
+    '[name=csrfmiddlewaretoken]'
+).value;
 
 const AdController = window.Adsgram.init({
     blockId: "36322"
@@ -173,7 +176,7 @@ const AdController = window.Adsgram.init({
 
 document.getElementById("watchAdBtn").onclick = async () => {
 
-    try{
+    try {
 
         document.getElementById("status").innerHTML =
         "Loading Ad...";
@@ -181,31 +184,39 @@ document.getElementById("watchAdBtn").onclick = async () => {
         await AdController.show();
 
         document.getElementById("status").innerHTML =
-        "Reward Processing...";
+        "Processing Reward...";
 
-    }
+        const response = await fetch("/Task/point/",{
+            method:"POST",
+            headers:{
+                "X-CSRFToken":csrftoken
+            }
+        });
 
-    catch(error){
+        const data = await response.json();
+
+        if(data.success){
+
+            document.getElementById("status").innerHTML =
+            "🎉 10 Views Added";
+
+        }else{
+
+            document.getElementById("status").innerHTML =
+            "Reward Failed";
+
+        }
+
+    } catch(error){
+
+        console.log(error);
 
         document.getElementById("status").innerHTML =
         "Ad not completed.";
 
     }
 
-}
-
-await AdController.show();
-
-await fetch("/Task/point/",{
-    method:"POST",
-    headers:{
-        "X-CSRFToken":csrftoken
-    }
-});
-
-document.getElementById("status").innerHTML =
-"10 Views Added!";
-
+};
 </script>
 </body>
 </html>
