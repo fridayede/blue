@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cssanimation@1.0.0/cssanimation.min.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
 </head>
 <body>
 
@@ -146,6 +147,12 @@ footer {
 
     
 
+
+        <button id="watchAdBtn">
+    🎁 Watch Ad & Earn 10 Views
+    </button>
+
+  <p id="status"></p>
    
     
   
@@ -157,5 +164,48 @@ footer {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
         crossorigin="anonymous"></script>
+
+        <script>
+
+const AdController = window.Adsgram.init({
+    blockId: "36322"
+});
+
+document.getElementById("watchAdBtn").onclick = async () => {
+
+    try{
+
+        document.getElementById("status").innerHTML =
+        "Loading Ad...";
+
+        await AdController.show();
+
+        document.getElementById("status").innerHTML =
+        "Reward Processing...";
+
+    }
+
+    catch(error){
+
+        document.getElementById("status").innerHTML =
+        "Ad not completed.";
+
+    }
+
+}
+
+await AdController.show();
+
+await fetch("/Task/point/",{
+    method:"POST",
+    headers:{
+        "X-CSRFToken":csrftoken
+    }
+});
+
+document.getElementById("status").innerHTML =
+"10 Views Added!";
+
+</script>
 </body>
 </html>
