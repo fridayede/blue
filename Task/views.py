@@ -3,6 +3,8 @@ from urllib import request
 
 from django.shortcuts import redirect, render
 from django.contrib import messages
+
+from Blue.Account.models import User
 from .models import Ads,saveAds,AdAnswer
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -145,6 +147,30 @@ def request_ad_token(request):
 
 
 def point(request):
+
+    user = request.user
+
+    if not user:
+        return JsonResponse({
+            "success": False,
+            "message": "Missing userId"
+        }, status=400)
+
+    try:
+        user = User.objects.get(user=user)
+
+        user.views += 10
+        user.save()
+
+        return JsonResponse({
+            "success": True,
+            "views": user.views
+        })
+    except User.DoesNotExist:
+        return JsonResponse({
+            "success": False,
+            "message": "User not found"
+        }, status=404)
     return render(request, "point.html")
 
 
