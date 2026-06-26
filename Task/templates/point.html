@@ -18,22 +18,135 @@
 </head>
 <body>
 
-    {% block content %}{% endblock content %}
+     <style>
+        html,
+body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Push footer down */
+.clambtn {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    padding-bottom: 100px;
+}
+
+/* Footer fixed at bottom */
+footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 10px;
+    z-index: 1000;
+}
+
+/* Responsive image */
+.clambtn img {
+    width: 70vw;
+    height: 70vw;
+    max-width: 20rem;
+    max-height: 20rem;
+}
+    </style>
+    {% if messages %}
+{% for message in messages %}
+<div class="alert 
+    {% if message.tags == 'error' %} alert-danger
+    {% elif message.tags == 'success' %} alert-success
+    {% elif message.tags == 'warning' %} alert-warning
+    {% else %} alert-info
+    {% endif %}
+    alert-dismissible fade show"
+    
+    role="alert"
+    
+    style="
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        min-width: 250px;
+    ">
+
+  <strong style="
+    {% if message.tags == 'error' %} color: red;
+    {% elif message.tags == 'success' %} color: green;
+    {% elif message.tags == 'warning' %} color: orange;
+    {% else %} color: blue;
+    {% endif %}
+  ">
+      {{ message }}
+  </strong>
+
+  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endfor %}
+{% endif %}
+
+    <div>
+        <div style="
+            justify-content: center;
+            align-items: center;
+            display: flex;
+            font-size: 24px;
+            font-family: Arial, sans-serif;
+            margin: 12px;
+            padding: 12px;
+
+            ">
+            <p>Avaliable task</p>
+        </div>
+        <div style="
+            justify-content: center;
+            align-items: center;
+            display: flex;
+            font-size: 18px;
+            font-family: Arial, sans-serif;
+            margin: 12px;
+            padding: 12px;
+
+            ">
+            <p>Complete any task and receive instant rewards!</p>
+        </div>
+
+        
+    
+        <ul class="nav nav-pills nav-fill gap-2 p-1 small  rounded-5 shadow-sm" id="pillNav2" role="tablist"
+        style="background:  linear-gradient(135deg, #06152B, #0A1F3F, #003B6F, #00CFFF, #4DEBFF);"
+        style="--bs-nav-link-color: var(--bs-white); --bs-nav-pills-link-active-color: var(--bs-primary); --bs-nav-pills-link-active-bg: var(--bs-white);" >
+
+        
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active rounded-5" id="home-tab2" data-bs-toggle="tab" type="button" role="tab" aria-selected="true">Task</button>
+            </li>
+        
+
+        
+            <li class="nav-item" role="presentation">
+                 <a href="{% url 'Task:point' %}" class="nav-link rounded-5 {% if request.path == '/Task/point/' %}active{% endif %}">point</a></li>
+            </li>
+        
+
+            <li class="nav-item" role="presentation">
+                    <a href="{% url 'Task:complect' %}" class="nav-link rounded-5 {% if request.path == '/Task/complect/' %}active{% endif %}">complet</a></li>
+        </ul>
+
 
     
 
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    
-    <br>
-    <br>
-    <br>
+   
     
   
     {% include "foot/footer.html" %}
