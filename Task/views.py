@@ -266,30 +266,30 @@ def point(request):
         
     
 
-    user = request.user
+    # user = request.user
 
-    if not user:
-        return JsonResponse({
-            "success": False,
-            "message": "Missing userId"
-        }, status=400)
+    # if not user:
+    #     return JsonResponse({
+    #         "success": False,
+    #         "message": "Missing userId"
+    #     }, status=400)
 
-    try:
-        user = User.objects.get(user=user)
+    # try:
+    #     user = User.objects.get(user=user)
 
-        user.views += 10
-        user.save()
+    #     user.views += 10
+    #     user.save()
 
-        return JsonResponse({
-            "success": True,
-            "views": user.views
-        })
-    except User.DoesNotExist:
-        return JsonResponse({
-            "success": False,
-            "message": "User not found"
-        }, status=404)
-    return render(request, "point.html")
+    #     return JsonResponse({
+    #         "success": True,
+    #         "views": user.views
+    #     })
+    # except User.DoesNotExist:
+    #     return JsonResponse({
+    #         "success": False,
+    #         "message": "User not found"
+    #     }, status=404)
+    # return render(request, "point.html")
 
 
 
