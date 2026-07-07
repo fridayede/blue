@@ -21,7 +21,7 @@ urlpatterns = [
     #     views.adsgram_callback,
     #     name="adsgram_callback"
     # ),
-    # path('point/', views.point, name='point'),
+    path('point/', views.point, name='point'),
     
 ]
 # path('details/<int:product_id>/',views.product_detail, name="product_detail")
