@@ -624,7 +624,7 @@
 
     // Auto run on load to establish visibility context counters
     window.addEventListener("DOMContentLoaded", () => {
-        fetch("{% url 'get_ad_token' %}").then(res => res.json()).then(data => {
+        fetch("{% url 'Task:get_ad_token' %}").then(res => res.json()).then(data => {
             if(data.remaining !== undefined) counterLabel.innerText = data.remaining;
         }).catch(() => {});
     });
