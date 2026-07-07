@@ -551,8 +551,133 @@
 {% include "foot/footer.html" %}
 
 <script>
+const ADSGRAM_BLOCK_ID = "8170652613";
+
+// -----------------------------
+// DOM Elements
+// -----------------------------
+const watchBtn = document.getElementById("watch-ad-btn");
+const statusText = document.getElementById("status-display");
+const counterLabel = document.getElementById("ad-count-label");
+
+// -----------------------------
+// Check AdsGram Library
+// -----------------------------
+if (!window.Adsgram) {
+    console.error("AdsGram SDK failed to load.");
+    statusText.innerText = "AdsGram SDK not loaded.";
+}
+
+// -----------------------------
+// Initialize AdsGram ONCE
+// -----------------------------
+const AdController = window.Adsgram.init({
+    blockId: ADSGRAM_BLOCK_ID,
+    debug: true   // Change to false after testing
+});
+
+// -----------------------------
+// Watch Ad Button
+// -----------------------------
+watchBtn.addEventListener("click", triggerAdPlayback);
+
+// -----------------------------
+// Get Secure Token From Django
+// -----------------------------
+async function triggerAdPlayback() {
+
+    watchBtn.disabled = true;
+    statusText.innerText = "Preparing advertisement...";
+
+    try {
+
+        const response = await fetch("{% url 'Task:get_ad_token' %}", {
+            method: "GET",
+            headers: {
+                "X-Requested-With": "XMLHttpRequest"
+            }
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || data.error) {
+
+            statusText.innerText =
+                data.message || "Unable to load advertisement.";
+
+            watchBtn.disabled = false;
+            return;
+        }
+
+        counterLabel.innerText = data.remaining;
+
+        await playAd(data.ymid);
+
+    }
+
+    catch (err) {
+
+        console.error(err);
+
+        statusText.innerText =
+            "Unable to contact the server.";
+
+        watchBtn.disabled = false;
+    }
+
+}
+
+// -----------------------------
+// Play Rewarded Ad
+// -----------------------------
+async function playAd(ymid) {
+
+    statusText.innerText = "Loading advertisement...";
+
+    try {
+
+        console.log("Showing ad...");
+        console.log("YMID:", ymid);
+
+        await AdController.show({
+            ymid: ymid
+        });
+
+        statusText.innerHTML =
+            "<span style='color:lime;'>✔ Advertisement completed successfully.</span>";
+
+        let remaining = parseInt(counterLabel.innerText);
+
+        if (!isNaN(remaining) && remaining > 0) {
+            counterLabel.innerText = remaining - 1;
+        }
+
+    }
+
+    catch (err) {
+
+        console.error("AdsGram Error:", err);
+
+        statusText.innerText =
+            "Advertisement was skipped or unavailable.";
+
+    }
+
+    finally {
+
+        watchBtn.disabled = false;
+
+    }
+
+}
+</script>
+
+<script>
     // Replace with your actual Adsgram Block ID from your Adsgram panel
-    const ADSGRAM_BLOCK_ID = "8170652613"; 
+
+
+    
+    {% comment %} const ADSGRAM_BLOCK_ID = "8170652613"; 
     
     const watchBtn = document.getElementById("watch-ad-btn");
     const statusText = document.getElementById("status-display");
@@ -627,7 +752,7 @@
         fetch("{% url 'Task:get_ad_token' %}").then(res => res.json()).then(data => {
             if(data.remaining !== undefined) counterLabel.innerText = data.remaining;
         }).catch(() => {});
-    });
+    }); {% endcomment %}
 </script>
 
 <script src="https://jsdelivr.net"></script>
