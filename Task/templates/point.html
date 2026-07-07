@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+{% comment %} <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -437,6 +437,572 @@
     // ------------------------------------------------------------
     checkRemaining();
   </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ {% endcomment %}
+
+
+
+
+
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        {% block title %}{% endblock title %}
+    </title>
+     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="stylesheet" href="style.css">
+    <!-- cssanimation.io - Core CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cssanimation@1.0.0/cssanimation.min.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+</head>
+<body>
+
+    <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a2e;
+      color: #eee;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: #16213e;
+      padding: 40px 30px;
+      border-radius: 20px;
+      text-align: center;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    h2 {
+      margin-bottom: 8px;
+      font-size: 24px;
+      color: #e94560;
+    }
+
+    .info {
+      font-size: 14px;
+      color: #aaa;
+      margin-bottom: 30px;
+    }
+
+    .remaining {
+      background: #0f3460;
+      padding: 10px 16px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-size: 15px;
+    }
+
+    .remaining span {
+      font-weight: bold;
+      color: #e94560;
+    }
+
+    button {
+      background: #e94560;
+      color: white;
+      border: none;
+      padding: 15px 40px;
+      font-size: 18px;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      width: 100%;
+    }
+
+    button:disabled {
+      background: #555;
+      cursor: not-allowed;
+    }
+
+    .countdown {
+      font-size: 48px;
+      font-weight: bold;
+      color: #e94560;
+      margin: 20px 0;
+    }
+
+    .status {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #aaa;
+      min-height: 40px;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+    {% if messages %}
+{% for message in messages %}
+<div class="alert 
+    {% if message.tags == 'error' %} alert-danger
+    {% elif message.tags == 'success' %} alert-success
+    {% elif message.tags == 'warning' %} alert-warning
+    {% else %} alert-info
+    {% endif %}
+    alert-dismissible fade show"
+    
+    role="alert"
+    
+    style="
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        min-width: 250px;
+    ">
+
+  <strong style="
+    {% if message.tags == 'error' %} color: red;
+    {% elif message.tags == 'success' %} color: green;
+    {% elif message.tags == 'warning' %} color: orange;
+    {% else %} color: blue;
+    {% endif %}
+  ">
+      {{ message }}
+  </strong>
+
+  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endfor %}
+{% endif %}
+
+    <div>
+        <div style="
+            justify-content: center;
+            align-items: center;
+            display: flex;
+            font-size: 24px;
+            font-family: Arial, sans-serif;
+            margin: 12px;
+            padding: 12px;
+
+            ">
+            <p>Avaliable task</p>
+        </div>
+        <div style="
+            justify-content: center;
+            align-items: center;
+            display: flex;
+            font-size: 18px;
+            font-family: Arial, sans-serif;
+            margin: 12px;
+            padding: 12px;
+
+            ">
+            <p>Complete any task and receive instant rewards!</p>
+        </div>
+
+        
+    
+        <ul class="nav nav-pills nav-fill gap-2 p-1 small  rounded-5 shadow-sm" id="pillNav2" role="tablist"
+        style="background:  linear-gradient(135deg, #06152B, #0A1F3F, #003B6F, #00CFFF, #4DEBFF);"
+        style="--bs-nav-link-color: var(--bs-white); --bs-nav-pills-link-active-color: var(--bs-primary); --bs-nav-pills-link-active-bg: var(--bs-white);" >
+
+        
+            <li class="nav-item" role="presentation">
+                <a href="{% url 'Task:hometask' %}" class="nav-link rounded-5 {% if request.path == '/Task/hometask/' %}active{% endif %}">Task</a></li>
+            </li>
+        
+
+        
+             <li class="nav-item" role="presentation">
+                 <a href="{% url 'Task:point' %}" class="nav-link rounded-5 {% if request.path == '/Task/point/' %}active{% endif %}">point</a></li>
+            </li>
+        
+
+            <li class="nav-item" role="presentation">
+                    <a href="{% url 'Task:complect' %}" class="nav-link rounded-5 {% if request.path == '/Task/complect/' %}active{% endif %}">complet</a></li>
+        </ul>
+
+
+    
+
+
+      <style>
+    body{
+    background:#101827;
+    font-family:Arial,Helvetica,sans-serif;
+    margin:0;
+    padding:20px;
+}
+
+.ad-container{
+
+    max-width:420px;
+    margin:40px auto;
+
+    background:#1E293B;
+
+    border-radius:20px;
+
+    padding:30px;
+
+    text-align:center;
+
+    box-shadow:0 10px 25px rgba(0,0,0,.35);
+
+}
+
+.ad-container h2{
+
+    color:#ffffff;
+
+    margin-bottom:10px;
+
+}
+
+.subtitle{
+
+    color:#BFC7D5;
+
+    font-size:15px;
+
+    margin-bottom:25px;
+
+}
+
+.remaining{
+
+    background:#0F172A;
+
+    border:1px solid #334155;
+
+    border-radius:15px;
+
+    padding:18px;
+
+    margin-bottom:25px;
+
+}
+
+.remaining span{
+
+    display:block;
+
+    color:#94A3B8;
+
+    font-size:14px;
+
+}
+
+.remaining h3{
+
+    margin-top:8px;
+
+    font-size:38px;
+
+    color:#22C55E;
+
+}
+
+#watchBtn{
+
+    width:100%;
+
+    border:none;
+
+    border-radius:50px;
+
+    padding:16px;
+
+    font-size:18px;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+    background:linear-gradient(135deg,#2563EB,#3B82F6);
+
+    color:white;
+
+    transition:.3s;
+
+}
+
+#watchBtn:hover{
+
+    transform:translateY(-2px);
+
+}
+
+#watchBtn:disabled{
+
+    background:#475569;
+
+    cursor:not-allowed;
+
+}
+
+.status{
+
+    margin-top:20px;
+
+    min-height:25px;
+
+    color:#CBD5E1;
+
+    font-size:15px;
+
+}
+
+.countdown-box{
+
+    margin-top:25px;
+
+    background:#0F172A;
+
+    border-radius:15px;
+
+    padding:20px;
+
+    border:1px solid #334155;
+
+}
+
+.countdown-box p{
+
+    color:#94A3B8;
+
+    margin-bottom:10px;
+
+}
+
+.countdown{
+
+    font-size:55px;
+
+    font-weight:bold;
+
+    color:#F59E0B;
+
+}
+
+.hidden{
+
+    display:none;
+
+}
+  </style>
+</head>
+<body>
+
+  
+
+    <!-- The main button -->
+    <button id="watchBtn" type="button">
+    ▶ Watch Ad
+</button>
+
+<p id="status"></p>
+
+<div class="remaining">
+    Ads left today:
+    <span id="remainingCount">...</span>
+</div>
+
+<div id="countdownContainer" class="hidden">
+    <p>Next ad available in</p>
+
+    <div id="countdownTimer" class="countdown">
+        30
+    </div>
+</div>
+   
+    
+  
+    {% include "foot/footer.html" %}
+
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+        crossorigin="anonymous"></script>
+ 
+     <script>
+      const COOLDOWN_SECONDS = 30;
+
+const USER_ID = Telegram.WebApp.initDataUnsafe.user.id;
+
+const AdController = window.Adsgram.init({
+    blockId: "8170652613",
+    debug: true,
+    debugBannerType: "RewardedVideo"
+});
+
+const watchBtn = document.getElementById("watchBtn");
+const statusEl = document.getElementById("status");
+const remainingEl = document.getElementById("remainingCount");
+const countdownContainer = document.getElementById("countdownContainer");
+const countdownTimer = document.getElementById("countdownTimer");
+
+let adsRemaining = 0;
+
+async function checkRemaining() {
+
+    try {
+
+        const response = await fetch(`/Task/get-ad-token/`);
+
+        const data = await response.json();
+
+        if (data.error) {
+
+            watchBtn.disabled = true;
+            watchBtn.innerHTML = "🚫 Limit Reached";
+
+            remainingEl.innerHTML = 0;
+
+            statusEl.innerHTML = data.message;
+
+            return;
+        }
+
+        adsRemaining = data.remaining;
+
+        remainingEl.innerHTML = adsRemaining;
+
+    } catch {
+
+        remainingEl.innerHTML = "?";
+
+    }
+
+}
+
+function startCountdown() {
+
+    let seconds = COOLDOWN_SECONDS;
+
+    countdownContainer.classList.remove("hidden");
+
+    countdownTimer.innerHTML = seconds;
+
+    watchBtn.disabled = true;
+
+    watchBtn.innerHTML = "⏳ Wait...";
+
+    let timer = setInterval(() => {
+
+        seconds--;
+
+        countdownTimer.innerHTML = seconds;
+
+        if (seconds <= 0) {
+
+            clearInterval(timer);
+
+            countdownContainer.classList.add("hidden");
+
+            watchBtn.disabled = false;
+
+            watchBtn.innerHTML = "▶ Watch Ad";
+
+            statusEl.innerHTML = "";
+
+            checkRemaining();
+
+        }
+
+    },1000);
+
+}
+
+watchBtn.addEventListener("click", async function(){
+
+    watchBtn.disabled = true;
+
+    statusEl.innerHTML = "Loading ad...";
+
+    try{
+
+        const tokenResponse = await fetch(`/Task/get-ad-token/`);
+
+        const token = await tokenResponse.json();
+
+        if(token.error){
+
+            watchBtn.innerHTML = "🚫 Limit Reached";
+
+            statusEl.innerHTML = token.message;
+
+            remainingEl.innerHTML = 0;
+
+            return;
+
+        }
+
+        remainingEl.innerHTML = token.remaining;
+
+        statusEl.innerHTML = "Playing ad...";
+
+        await AdController.show({
+
+            ymid: token.ymid
+
+        });
+
+        statusEl.innerHTML = "✅ Ad completed.";
+
+        remainingEl.innerHTML = Math.max(0, token.remaining - 1);
+
+        startCountdown();
+
+    }
+
+    catch(error){
+
+        console.log(error);
+
+        watchBtn.disabled = false;
+
+        watchBtn.innerHTML = "▶ Watch Ad";
+
+        statusEl.innerHTML = "❌ Ad was skipped.";
+
+    }
+
+});
+
+checkRemaining();
+     </script>
 </body>
 </html>
 
