@@ -240,6 +240,7 @@ def adsgram_callback(request):
 
     computed = hmac.new(
         Adsgram_token.encode(),
+        Adsgram_token= "7ce9e22f24ab451f9785c2ceb4132be8"
         request.body,
         hashlib.sha256
     ).hexdigest()
