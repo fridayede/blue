@@ -8,18 +8,20 @@ urlpatterns = [
     path("task/<int:id>/", views.task, name="task"),
     path('complect/', views.complect, name='complect'),
     # path('ad-token/', views.request_ad_token, name='ad_token'),
-    path(
-        "get-ad-token/",
-        views.get_ad_token,
-        name="get_ad_token"
-    ),
+     path("get-ad-token/", views.get_ad_token, name="get_ad_token"),
+    path("adsgram-callback/", views.adsgram_callback, name="adsgram_callback"),
+    # path(
+    #     "get-ad-token/",
+    #     views.get_ad_token,
+    #     name="get_ad_token"
+    # ),
 
-    path(
-        "adsgram-callback/",
-        views.adsgram_callback,
-        name="adsgram_callback"
-    ),
-    path('point/', views.point, name='point'),
+    # path(
+    #     "adsgram-callback/",
+    #     views.adsgram_callback,
+    #     name="adsgram_callback"
+    # ),
+    # path('point/', views.point, name='point'),
     
 ]
 # path('details/<int:product_id>/',views.product_detail, name="product_detail")

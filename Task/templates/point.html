@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+{% comment %} <!DOCTYPE html>
 {% load static %}
 <html lang="en">
 <head>
@@ -439,7 +439,199 @@
     checkRemaining();
   </script>
 </body>
+</html> {% endcomment %}
+
+
+
+
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Points Task</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cssanimation@1.0.0/cssanimation.min.css">
+    
+    <!-- Telegram and AdsGram SDK scripts -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+</head>
+<body>
+
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a2e;
+      color: #eee;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      min-height: 100vh;
+      padding-top: 20px;
+    }
+    .container-box {
+      background: #16213e;
+      padding: 40px 30px;
+      border-radius: 20px;
+      text-align: center;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      margin-top: 30px;
+    }
+    h2 { margin-bottom: 8px; font-size: 24px; color: #e94560; }
+    .info { font-size: 14px; color: #aaa; margin-bottom: 30px; }
+    .remaining { background: #0f3460; padding: 10px 16px; border-radius: 10px; margin-bottom: 20px; font-size: 15px; }
+    .remaining span { font-weight: bold; color: #e94560; }
+    button.ad-btn {
+      background: #e94560; color: white; border: none; padding: 15px 40px;
+      font-size: 18px; border-radius: 50px; cursor: pointer; transition: all 0.3s ease; width: 100%;
+    }
+    button.ad-btn:disabled { background: #555; cursor: not-allowed; }
+    .status-msg { margin-top: 20px; font-size: 14px; color: #aaa; min-height: 40px; }
+</style>
+
+<!-- Messages System -->
+{% if messages %}
+    {% for message in messages %}
+    <div class="alert {% if message.tags == 'error' %} alert-danger {% elif message.tags == 'success' %} alert-success {% else %} alert-info {% endif %} alert-dismissible fade show" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 250px;">
+      <strong>{{ message }}</strong>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+{% endif %}
+
+<div>
+    <div class="text-center m-2 p-2" style="font-size: 24px; font-family: Arial, sans-serif;">
+        <p>Available Task</p>
+    </div>
+    <div class="text-center m-2 p-2" style="font-size: 18px; font-family: Arial, sans-serif; color: #aaa;">
+        <p>Complete any task and receive instant rewards!</p>
+    </div>
+
+    <!-- Navigation Menu Tabs -->
+    <ul class="nav nav-pills nav-fill gap-2 p-1 small rounded-5 shadow-sm" id="pillNav2" role="tablist"
+        style="background: linear-gradient(135deg, #06152B, #0A1F3F, #003B6F, #00CFFF, #4DEBFF);">
+        <li class="nav-item" role="presentation">
+            <a href="{% url 'Task:hometask' %}" class="nav-link rounded-5 {% if request.path == '/Task/hometask/' %}active{% endif %}">Task</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a href="{% url 'Task:point' %}" class="nav-link rounded-5 {% if request.path == '/Task/point/' %}active{% endif %}">Point</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a href="{% url 'Task:complect' %}" class="nav-link rounded-5 {% if request.path == '/Task/complect/' %}active{% endif %}">Complete</a>
+        </li>
+    </ul>
+
+    <!-- Ads Controller Container Area -->
+    <div class="container-box mx-auto">
+        <h2>Watch Video Ad</h2>
+        <p class="info">Watch a full video advertisement to claim points.</p>
+        
+        <div class="remaining">
+            Daily Ads Available: <span id="ad-count-label">--</span>
+        </div>
+
+        <button id="watch-ad-btn" class="ad-btn" onclick="triggerAdPlayback()">
+            <i class="bi bi-play-circle-fill me-2"></i>Watch Video
+        </button>
+
+        <div id="status-display" class="status-msg">
+            Click the button above to begin.
+        </div>
+    </div>
+</div>
+
+<script>
+    // Replace with your actual Adsgram Block ID from your Adsgram panel
+    const ADSGRAM_BLOCK_ID = "8170652613"; 
+    
+    const watchBtn = document.getElementById("watch-ad-btn");
+    const statusText = document.getElementById("status-display");
+    const counterLabel = document.getElementById("ad-count-label");
+
+    /**
+     * Obtains a secure verification session tracking token from Django views
+     */
+    async function triggerAdPlayback() {
+        watchBtn.disabled = true;
+        statusText.innerText = "Requesting secure ad verification token...";
+
+        try {
+            const response = await fetch("{% url 'get_ad_token' %}", {
+                method: "GET",
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || data.error) {
+                statusText.innerText = data.message || "Failed to fetch ad details.";
+                watchBtn.disabled = false;
+                return;
+            }
+
+            // Update remaining label
+            counterLabel.innerText = data.remaining;
+            
+            // Pass the tracking 'ymid' token to AdsGram engine parameters
+            executeAdsgramVideo(data.ymid);
+
+        } catch (error) {
+            console.error(error);
+            statusText.innerText = "Network connection error occurred.";
+            watchBtn.disabled = false;
+        }
+    }
+
+    /**
+     * Initializes the AdsGram script handler module engine
+     */
+    function executeAdsgramVideo(ymid) {
+        statusText.innerText = "Loading video content...";
+        
+        const AdController = window.Adsgram.init({ 
+            blockId: ADSGRAM_BLOCK_ID,
+            debug: false // Set true during local testing runs
+        });
+
+        AdController.show({ ymid: ymid }).then((result) => {
+            // Callback execution status handler
+            statusText.innerText = "Verifying view performance with server...";
+            
+            if (result.done) {
+                statusText.innerHTML = "<span style='color: #4dfbaf;'>Success! Reward issued successfully.</span>";
+            } else {
+                statusText.innerText = "Ad was skipped. No points rewarded.";
+            }
+            watchBtn.disabled = false;
+        }).catch((err) => {
+            console.error("AdsGram Error:", err);
+            statusText.innerText = "Playback error or ad was blocked.";
+            watchBtn.disabled = false;
+        });
+    }
+
+    // Auto run on load to establish visibility context counters
+    window.addEventListener("DOMContentLoaded", () => {
+        fetch("{% url 'get_ad_token' %}").then(res => res.json()).then(data => {
+            if(data.remaining !== undefined) counterLabel.innerText = data.remaining;
+        }).catch(() => {});
+    });
+</script>
+
+<script src="https://jsdelivr.net"></script>
+</body>
 </html>
+
 
 
 

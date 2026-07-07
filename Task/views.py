@@ -188,105 +188,212 @@ max_ADS_per_day = 30
 
 
 
+# @login_required
+# def point(request):
+#     return render(request, "point.html")
+
+
+
+# @login_required
+# def get_ad_token(request):
+
+#     user = request.user
+#     today = date.today()
+
+#     daily, created = Daily_Ad_count.objects.get_or_create(
+#         user=user,
+#         date=today,
+#         defaults={"count":0}
+#     )
+
+#     remaining = max_ADS_per_day - daily.count
+
+#     if remaining <= 0:
+
+#         return JsonResponse({
+#             "error":True,
+#             "message":"Daily limit reached."
+#         })
+
+#     ymid = str(uuid.uuid4())
+
+#     Adsview.objects.create(
+#         user=user,
+#         ymid=ymid,
+#         status="pending"
+#     )
+
+#     return JsonResponse({
+#         "ymid":ymid,
+#         "remaining":remaining
+#     })
+
+
+
+
+# def adsgram_callback(request):
+
+#     received_signature = request.headers.get(
+#         "X-Adsgram-Signature",
+#         ""
+#     )
+#     computed = hmac.new(
+#     Adsgram_token.encode("utf-8"),
+#     Adsgram_token.encode("utf-8") + request.body,
+#     hashlib.sha256
+#     ).hexdigest()
+
+#     if not hmac.compare_digest(received_signature, computed):
+#         return HttpResponse(status=400)
+
+#     ymid = request.GET.get("ymid")
+#     reward_event = request.GET.get("reward_event_type")
+
+#     try:
+
+#         ad_view = Adsview.objects.get(
+#             ymid=ymid
+#         )
+
+#     except Adsview.DoesNotExist:
+
+#         return HttpResponse(status=404)
+
+#     if reward_event == "valued" and ad_view.status == "pending":
+
+#         user = ad_view.user
+
+#         swap = Swap.objects.get(user=user)
+#         swap.point += 10
+#         swap.save()
+
+#         today = date.today()
+
+#         daily, created = Daily_Ad_count.objects.get_or_create(
+
+#             user=user,
+#             date=today,
+#             defaults={"count":0}
+
+#         )
+
+#         daily.count += 1
+#         daily.save()
+
+#         ad_view.status = "completed"
+#         ad_view.save()
+
+#     return HttpResponse(status=200)
+
+
+
+
+
+
+
+# THIRD TESTING
+import hmac
+import hashlib
+import uuid
+from datetime import date
+
+from django.db import transaction
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse, HttpResponse, HttpRequest
+from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
+
+# Import your models safely
+from .models import Daily_Ad_count, Adsview
+from Swap.models import Swap
+
+Adsgram_token = "7ce9e22f24ab451f9785c2ceb4132be8"
+max_ADS_per_day = 30
+
+
 @login_required
-def point(request):
+def point(request: HttpRequest) -> HttpResponse:
+    """Renders the standard user points interface page."""
     return render(request, "point.html")
 
 
-
 @login_required
-def get_ad_token(request):
-
+def get_ad_token(request: HttpRequest) -> JsonResponse:
+    """Generates a secure pending tracking ID (ymid) for tracking ad playback."""
     user = request.user
     today = date.today()
 
-    daily, created = Daily_Ad_count.objects.get_or_create(
-        user=user,
-        date=today,
-        defaults={"count":0}
-    )
+    with transaction.atomic():
+        daily, created = Daily_Ad_count.objects.select_for_update().get_or_create(
+            user=user,
+            date=today,
+            defaults={"count": 0}
+        )
+        
+        remaining = max_ADS_per_day - daily.count
+        if remaining <= 0:
+            return JsonResponse({
+                "error": True,
+                "message": "Daily limit reached."
+            }, status=400)
 
-    remaining = max_ADS_per_day - daily.count
-
-    if remaining <= 0:
-
-        return JsonResponse({
-            "error":True,
-            "message":"Daily limit reached."
-        })
-
-    ymid = str(uuid.uuid4())
-
-    Adsview.objects.create(
-        user=user,
-        ymid=ymid,
-        status="pending"
-    )
+        ymid = str(uuid.uuid4())
+        Adsview.objects.create(user=user, ymid=ymid, status="pending")
 
     return JsonResponse({
-        "ymid":ymid,
-        "remaining":remaining
+        "ymid": ymid,
+        "remaining": remaining
     })
 
 
-
-
-def adsgram_callback(request):
-
-    received_signature = request.headers.get(
-        "X-Adsgram-Signature",
-        ""
-    )
+@csrf_exempt
+def adsgram_callback(request: HttpRequest) -> HttpResponse:
+    """Handles incoming server-to-server confirmation webhooks securely from AdsGram."""
+    received_signature = request.headers.get("X-Adsgram-Signature", "")
+    
+    # Compute signature against the raw body string payload
     computed = hmac.new(
-    Adsgram_token.encode("utf-8"),
-    Adsgram_token.encode("utf-8") + request.body,
-    hashlib.sha256
+        Adsgram_token.encode("utf-8"),
+        request.body,
+        hashlib.sha256
     ).hexdigest()
 
     if not hmac.compare_digest(received_signature, computed):
-        return HttpResponse(status=400)
+        return HttpResponse("Invalid Signature", status=400)
 
     ymid = request.GET.get("ymid")
     reward_event = request.GET.get("reward_event_type")
 
     try:
+        with transaction.atomic():
+            ad_view = Adsview.objects.select_for_update().get(ymid=ymid)
 
-        ad_view = Adsview.objects.get(
-            ymid=ymid
-        )
+            if reward_event == "valued" and ad_view.status == "pending":
+                user = ad_view.user
+
+                # Award 10 points to the user's Swap record
+                swap, _ = Swap.objects.select_for_update().get_or_create(user=user, defaults={"point": 0})
+                swap.point += 10
+                swap.save()
+
+                # Increment daily consumed ad counts
+                today = date.today()
+                daily, _ = Daily_Ad_count.objects.select_for_update().get_or_create(
+                    user=user,
+                    date=today,
+                    defaults={"count": 0}
+                )
+                daily.count += 1
+                daily.save()
+
+                # Mark tracking session completed
+                ad_view.status = "completed"
+                ad_view.save()
 
     except Adsview.DoesNotExist:
+        return HttpResponse("Not Found", status=404)
 
-        return HttpResponse(status=404)
-
-    if reward_event == "valued" and ad_view.status == "pending":
-
-        user = ad_view.user
-
-        swap = Swap.objects.get(user=user)
-        swap.point += 10
-        swap.save()
-
-        today = date.today()
-
-        daily, created = Daily_Ad_count.objects.get_or_create(
-
-            user=user,
-            date=today,
-            defaults={"count":0}
-
-        )
-
-        daily.count += 1
-        daily.save()
-
-        ad_view.status = "completed"
-        ad_view.save()
-
-    return HttpResponse(status=200)
-
-
-
+    return HttpResponse("OK", status=200)
 
 
 
