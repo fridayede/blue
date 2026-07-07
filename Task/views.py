@@ -151,37 +151,37 @@ max_ADS_per_day = 30
 
 
 
-def request_ad_token(request):
-    # In a real app, get user ID from Telegram authentication
-    user = request.GET.get('user')
-    today = date.today()
-    # ------------------------------------------------------------
-    # CHECK DAILY LIMIT
-    # ------------------------------------------------------------
-    daily, created = Daily_Ad_count.objects.get_or_create(
-        user_id=user,
-        date=today,
-        defaults={'count': 0}
-    )
+# def request_ad_token(request):
+#     # In a real app, get user ID from Telegram authentication
+#     user = request.GET.get('user')
+#     today = date.today()
+#     # ------------------------------------------------------------
+#     # CHECK DAILY LIMIT
+#     # ------------------------------------------------------------
+#     daily, created = Daily_Ad_count.objects.get_or_create(
+#         user_id=user,
+#         date=today,
+#         defaults={'count': 0}
+#     )
 
-    if daily.count >= max_ADS_per_day:
-        # User has already watched 30 ads today
-        return JsonResponse({
-            'error': True,
-            'message': f'You have reached your {max_ADS_per_day} ad limit for today. Come back tomorrow!',
-            'remaining': 0
-        }, status=400)
+#     if daily.count >= max_ADS_per_day:
+#         # User has already watched 30 ads today
+#         return JsonResponse({
+#             'error': True,
+#             'message': f'You have reached your {max_ADS_per_day} ad limit for today. Come back tomorrow!',
+#             'remaining': 0
+#         }, status=400)
 
-    # ------------------------------------------------------------
-    # EVERYTHING OK – CREATE A NEW TICKET
-    # ------------------------------------------------------------
-    ymid = str(uuid.uuid4())
-    Adsview.objects.create(user_id=user, ymid=ymid, status='pending')
+#     # ------------------------------------------------------------
+#     # EVERYTHING OK – CREATE A NEW TICKET
+#     # ------------------------------------------------------------
+#     ymid = str(uuid.uuid4())
+#     Adsview.objects.create(user_id=user, ymid=ymid, status='pending')
 
-    return JsonResponse({
-        'ymid': ymid,
-        'remaining': max_ADS_per_day - daily.count       # how many left for today
-    })
+#     return JsonResponse({
+#         'ymid': ymid,
+#         'remaining': max_ADS_per_day - daily.count       # how many left for today
+#     })
 
 
 

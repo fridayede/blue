@@ -7,7 +7,7 @@ urlpatterns = [
     path('hometask/',views.hometask, name='hometask'),  
     path("task/<int:id>/", views.task, name="task"),
     path('complect/', views.complect, name='complect'),
-    path('ad-token/', views.request_ad_token, name='ad_token'),
+    # path('ad-token/', views.request_ad_token, name='ad_token'),
     path(
         "get-ad-token/",
         views.get_ad_token,
