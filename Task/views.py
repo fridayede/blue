@@ -259,7 +259,7 @@ def point(request):
         ad_view.status = 'completed'
         ad_view.save()
 
-    return JsonResponse({'status': 'ok'})
+    # return JsonResponse({'status': 'ok'})
 
     
 
@@ -289,7 +289,7 @@ def point(request):
     #         "success": False,
     #         "message": "User not found"
     #     }, status=404)
-    # return render(request, "point.html")
+    return render(request, "point.html")
 
 
 
