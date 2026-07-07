@@ -215,85 +215,136 @@ def request_ad_token(request):
 
 
 
-def point(request):
-    received_signature = request.headers.get('X-Adsgram-Signature', '')
-    computed = hmac.new(
-        Adsgram_token.encode('utf-8'),
-        request.body,
-        hashlib.sha256
-    ).hexdigest()
-    swap = Swap.objects.get(user=request.user)
-    if not hmac.compare_digest(received_signature, computed):
-        return JsonResponse({
-            "success": False,
-            "message": "Invalid signature"
-        }, status=400)
-     # 2. Read the data
-    ymid = request.GET.get('ymid')
-    reward_event = request.GET.get('reward_event_type')
+# def point(request):
+#     received_signature = request.headers.get('X-Adsgram-Signature', '')
+#     computed = hmac.new(
+#         Adsgram_token.encode('utf-8'),
+#         request.body,
+#         hashlib.sha256
+#     ).hexdigest()
+#     swap = Swap.objects.get(user=request.user)
+#     if not hmac.compare_digest(received_signature, computed):
+#         return JsonResponse({
+#             "success": False,
+#             "message": "Invalid signature"
+#         }, status=400)
+#      # 2. Read the data
+#     ymid = request.GET.get('ymid')
+#     reward_event = request.GET.get('reward_event_type')
 
     
-    # 3. Find our pending record
-    try:
-        ad_view = Adsview.objects.get(ymid=ymid)
-    except Adsview.DoesNotExist:
-        return HttpResponse(status=404)
+#     # 3. Find our pending record
+#     try:
+#         ad_view = Adsview.objects.get(ymid=ymid)
+#     except Adsview.DoesNotExist:
+#         return HttpResponse(status=404)
     
-     # 4. Reward ONLY if it's valued and still pending
-    if reward_event == 'valued' and ad_view.status == 'pending':
-        user = ad_view.user
-        today = date.today()
+#      # 4. Reward ONLY if it's valued and still pending
+#     if reward_event == 'valued' and ad_view.status == 'pending':
+#         user = ad_view.user
+#         today = date.today()
 
-        swap.point += 10
-        swap.save()
-            # increase daily count
-        daily, _ = Daily_Ad_count.objects.get_or_create(
-            user=user,
-            date=today,
-            defaults={'count': 0}
-        )
-        daily.count += 1
-        daily.save()
+#         swap.point += 10
+#         swap.save()
+#             # increase daily count
+#         daily, _ = Daily_Ad_count.objects.get_or_create(
+#             user=user,
+#             date=today,
+#             defaults={'count': 0}
+#         )
+#         daily.count += 1
+#         daily.save()
 
-        # ---------- Mark ad view as completed ----------
-        ad_view.status = 'completed'
-        ad_view.save()
+#         # ---------- Mark ad view as completed ----------
+#         ad_view.status = 'completed'
+#         ad_view.save()
 
-    # return JsonResponse({'status': 'ok'})
+#     # return JsonResponse({'status': 'ok'})
 
     
 
         
     
 
-    # user = request.user
+#     # user = request.user
 
-    # if not user:
-    #     return JsonResponse({
-    #         "success": False,
-    #         "message": "Missing userId"
-    #     }, status=400)
+#     # if not user:
+#     #     return JsonResponse({
+#     #         "success": False,
+#     #         "message": "Missing userId"
+#     #     }, status=400)
 
-    # try:
-    #     user = User.objects.get(user=user)
+#     # try:
+#     #     user = User.objects.get(user=user)
 
-    #     user.views += 10
-    #     user.save()
+#     #     user.views += 10
+#     #     user.save()
 
-    #     return JsonResponse({
-    #         "success": True,
-    #         "views": user.views
-    #     })
-    # except User.DoesNotExist:
-    #     return JsonResponse({
-    #         "success": False,
-    #         "message": "User not found"
-    #     }, status=404)
-    return render(request, "point.html")
-
-
+#     #     return JsonResponse({
+#     #         "success": True,
+#     #         "views": user.views
+#     #     })
+#     # except User.DoesNotExist:
+#     #     return JsonResponse({
+#     #         "success": False,
+#     #         "message": "User not found"
+#     #     }, status=404)
+#     return render(request, "point.html")
 
 
+
+
+
+
+
+def point(request):
+    # Verify AdsGram signature
+    received_signature = request.headers.get("X-Adsgram-Signature", "")
+
+    computed = hmac.new(
+        Adsgram_token.encode("utf-8"),
+        request.body,
+        hashlib.sha256
+    ).hexdigest()
+
+    if not hmac.compare_digest(received_signature, computed):
+        return HttpResponse("Invalid signature", status=400)
+
+    # Read AdsGram data
+    ymid = request.GET.get("ymid")
+    reward_event = request.GET.get("reward_event_type")
+
+    # Find the pending ad record
+    try:
+        ad_view = Adsview.objects.get(ymid=ymid)
+    except Adsview.DoesNotExist:
+        return HttpResponse("Ad not found", status=404)
+
+    # Reward only once
+    if reward_event == "valued" and ad_view.status == "pending":
+        user = ad_view.user
+        today = date.today()
+
+        # Update user's points
+        swap = Swap.objects.get(user=user)
+        swap.point += 10
+        swap.save()
+
+        # Update daily ad count
+        daily, created = Daily_Ad_count.objects.get_or_create(
+            user=user,
+            date=today,
+            defaults={"count": 0},
+        )
+        daily.count += 1
+        daily.save()
+
+        # Mark as completed
+        ad_view.status = "completed"
+        ad_view.save()
+
+    # Tell AdsGram everything was processed successfully
+    return HttpResponse(status=200)
 
 
 
