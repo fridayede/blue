@@ -122,6 +122,9 @@ DATABASES = {
         "PASSWORD": "Atmost09074931706@",
         "HOST": "aws-0-eu-west-1.pooler.supabase.com",
         "PORT": "5432",
+         "OPTIONS": {
+            "sslmode": "require",
+        },
     }
 }
 

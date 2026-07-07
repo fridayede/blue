@@ -92,3 +92,29 @@ class AdAnswer(models.Model):
 
     def __str__(self):
         return self.answer
+    
+
+
+
+
+class Daily_Ad_count(models.Model):
+    user =models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
+    date = models.DateTimeField(auto_now_add=True)
+    count=models.IntegerField(default=0)
+
+    class Meta:
+        unique_together = ('user', 'date')           # one row per user per day
+
+    def __str__(self):
+        return f"{self.user.username} - {self.date} - {self.count} ads"
+    
+
+class Adsview(models.Model):
+    user= models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
+    ymid = models.CharField(max_length=223)
+    status = models.CharField(max_length=34,default="pending")
+    create_at= models.DateTimeField(auto_now_add=True)
+    reward = models.IntegerField(default=0)
+    # reward= models.ForeignKey(Ads, on_delete=models.CASCADE, default=0)
+
+
