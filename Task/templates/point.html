@@ -566,7 +566,7 @@
         statusText.innerText = "Requesting secure ad verification token...";
 
         try {
-            const response = await fetch("{% url 'get_ad_token' %}", {
+            const response = await fetch("{% url 'Task:get_ad_token' %}", {
                 method: "GET",
                 headers: {
                     "X-Requested-With": "XMLHttpRequest"
