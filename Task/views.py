@@ -237,12 +237,10 @@ def adsgram_callback(request):
         "X-Adsgram-Signature",
         ""
     )
-
     computed = hmac.new(
-        Adsgram_token.encode(),
-        Adsgram_token= "7ce9e22f24ab451f9785c2ceb4132be8"
-        request.body,
-        hashlib.sha256
+    Adsgram_token.encode("utf-8"),
+    Adsgram_token.encode("utf-8") + request.body,
+    hashlib.sha256
     ).hexdigest()
 
     if not hmac.compare_digest(received_signature, computed):
