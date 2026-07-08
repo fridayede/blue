@@ -1728,7 +1728,7 @@ checkRemaining();
                 if (typeof window.Adsgram !== 'undefined') {
                     AdController = window.Adsgram.init({
                         blockId: ADSGRAM_BLOCK_ID,
-                        debug: Flase, // set false in production
+                        debug: false, // set false in production
                     });
                     console.log('[Adsgram] Initialized successfully.');
                 } else {
