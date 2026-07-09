@@ -8,7 +8,7 @@ urlpatterns = [
     path("task/<int:id>/", views.task, name="task"),
     path('complect/', views.complect, name='complect'),
     # path('ad-token/', views.request_ad_token, name='ad_token'),
-       path('get-ad-token/', views.request_ad_token, name='get_ad_token'),
+    path('get-ad-token/', views.request_ad_token, name='get_ad_token'),
     path('adsgram-postback/', views.adsgram_postback, name='adsgram_postback'),
    
     path('point/', views.point, name='point'),
