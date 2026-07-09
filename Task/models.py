@@ -118,3 +118,56 @@ class Adsview(models.Model):
     # reward= models.ForeignKey(Ads, on_delete=models.CASCADE, default=0)
 
 
+
+
+
+
+
+
+from django.db import models
+from django.contrib.auth.models import User
+from django.utils import timezone
+
+class UserWallet(models.Model):
+    user = models.ForeignKey(
+    settings.AUTH_USER_MODEL,
+    on_delete=models.CASCADE
+)
+    balance = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.user.username} wallet"
+
+
+class DailyAdCount(models.Model):
+    """
+    Tracks how many ads a user watched TODAY.
+    Only one row per user per day.
+    """
+    user = models.ForeignKey(
+    settings.AUTH_USER_MODEL,
+    on_delete=models.CASCADE
+)
+    date = models.DateField(auto_now_add=True)       # the day of these views
+    count = models.IntegerField(default=0)           # how many ads watched today
+
+    class Meta:
+        unique_together = ('user', 'date')           # one row per user per day
+
+    def __str__(self):
+        return f"{self.user.username} - {self.date} - {self.count} ads"
+
+
+class AdView(models.Model):
+    user = models.ForeignKey(
+    settings.AUTH_USER_MODEL,
+    on_delete=models.CASCADE
+)
+    ymid = models.CharField(max_length=255, unique=True)
+    status = models.CharField(max_length=20, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"AdView {self.ymid} ({self.status})"
+
+
