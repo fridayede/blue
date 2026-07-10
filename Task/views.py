@@ -341,19 +341,18 @@ import json
 MAX_ADS_PER_DAY = 30          # you can change this number anytime
 
 def request_ad_token(request):
-    user= request.user 
-    user = user_id # Assuming user is authenticated via Django's auth system
-    # Ensure this handles fallback if Telegram user ID isn't sent
+   # 1. Extract the user_id from the GET parameters first
     user_id = request.GET.get('user_id')
-
-    print(user_id)
-    if not user_id:
-        print("for user")
-        print(user)
-        print("User ID not provided in request.")
-        print(user_id)
-        return JsonResponse({'error': True, 'message': 'Missing user identifier.'}, status=400)
-        
+    
+    # 2. Fallback check: If frontend missed it, try the logged-in Django user
+    if not user_id or user_id == "":
+        if request.user.is_authenticated:
+            user_id = str(request.user.id)
+        else:
+            return JsonResponse({'error': True, 'message': 'Missing user identifier.'}, status=400)
+            
+    # 3. Now it is safe to assign or use 'user_id'
+    user = user_id
     today = date.today()
 
     with transaction.atomic():
