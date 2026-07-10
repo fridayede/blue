@@ -1955,8 +1955,8 @@ checkRemaining();
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cssanimation@1.0.0/cssanimation.min.css">
 
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    {% comment %} <script src="https://sad.adsgram.ai/js/sad.min.js"></script> {% endcomment %}
-    <script src="https://cdn.adsgram.ai/js/sad.min.js"></script>
+    {% comment %} <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+    <script src="https://cdn.adsgram.ai/js/sad.min.js"></script> {% endcomment %}
     <script src="https://unpkg.com/adsgram-multichannel-sdk@latest/dist/sad.min.js"></script>
     {% comment %} 
     use this script if you want to use the AdsGram SDK from the official CDN.
@@ -2255,7 +2255,7 @@ checkRemaining();
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
             crossorigin="anonymous">
     </script>
-    
+
 
     <script>
         (function() {
@@ -2356,7 +2356,6 @@ checkRemaining();
                 countdownBox.classList.remove('hidden');
                 countdownNumber.textContent = seconds;
                 watchBtn.disabled = true;
-                watchBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Wait...';
 
                 countdownInterval = setInterval(() => {
                     seconds -= 1;
@@ -2450,7 +2449,7 @@ checkRemaining();
 
                 } catch (err) {
                     console.error('Trigger error:', err);
-                    setStatus('❌ Network error. Please try again.', 'error' err);
+                    setStatus('❌ Network error. Please try again.', 'error');
                     watchBtn.disabled = false;
                     watchBtn.innerHTML = '<i class="bi bi-play-circle-fill"></i> Watch Video';
                     isAdPlaying = false;
