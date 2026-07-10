@@ -328,12 +328,12 @@ from .models import AdView, UserWallet, DailyAdCount,Daily_Ad_count, Adsview
 
 
 from django.db import transaction
-from django.http import JsonResponse, HttpResponse
-from django.views.decorators.csrf import csrf_exempt
+# from django.http import JsonResponse, HttpResponse
+# from django.views.decorators.csrf import csrf_exempt
 from datetime import date
-import uuid
-import hmac
-import hashlib
+# import uuid
+# import hmac
+# import hashlib
 import json
 
 
