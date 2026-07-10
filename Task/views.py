@@ -342,8 +342,8 @@ MAX_ADS_PER_DAY = 30          # you can change this number anytime
 
 def request_ad_token(request):
     # Ensure this handles fallback if Telegram user ID isn't sent
-    user_id = request.GET.get('user_id')
-    if not user_id:
+    user = request.GET.get('user_id')
+    if not user:
         return JsonResponse({'error': True, 'message': 'Missing user identifier.'}, status=400)
         
     today = date.today()
@@ -351,7 +351,7 @@ def request_ad_token(request):
     with transaction.atomic():
         # Cleaned up select_for_update syntax with get_or_create
         daily, created = DailyAdCount.objects.select_for_update().get_or_create(
-            user_id=user_id,
+            user_id=user,
             date=today,
             defaults={'count': 0}
         )
@@ -359,10 +359,10 @@ def request_ad_token(request):
         # NOTE: If your model doesn't have 'created_at', remove 'created_at__date=today'
         # and rely purely on the daily count status.
         try:
-            pending_ads = AdView.objects.filter(user_id=user_id, status='pending', created_at__date=today).count()
+            pending_ads = AdView.objects.filter(user=user, status='pending', created_at__date=today).count()
         except Exception:
             # Fallback if 'created_at' field doesn't exist in your model
-            pending_ads = AdView.objects.filter(user_id=user_id, status='pending').count()
+            pending_ads = AdView.objects.filter(user=user, status='pending').count()
 
         if (daily.count + pending_ads) >= MAX_ADS_PER_DAY:
             return JsonResponse({
@@ -372,7 +372,7 @@ def request_ad_token(request):
             }, status=400)
 
         ymid = str(uuid.uuid4())
-        AdView.objects.create(user_id=user_id, ymid=ymid, status='pending')
+        AdView.objects.create(user=user, ymid=ymid, status='pending')
 
     return JsonResponse({
         'ymid': ymid,
