@@ -341,7 +341,6 @@ import json
 MAX_ADS_PER_DAY = 30          # you can change this number anytime
 
 def request_ad_token(request):
-   # 1. Extract the user_id from the GET parameters first
     user_id = request.GET.get('user_id')
     print(f"Received user_id: {user_id}")  # Debugging line
     
