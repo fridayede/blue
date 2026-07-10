@@ -431,7 +431,7 @@ def adsgram_postback(request):
         daily.count += 1
         daily.save()
 
-        wallet, _ = UserWallet.objects.select_for_update().get_or_create(user_id=user_id)
+        wallet, _ = UserWallet.objects.select_for_update().get_or_create(user=user)
         wallet.balance += 10
         wallet.save()
 
