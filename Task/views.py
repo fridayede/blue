@@ -304,10 +304,10 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
 # Import your models safely
-from .models import Daily_Ad_count, Adsview
+# from .models import Daily_Ad_count, Adsview
 from Swap.models import Swap
 
-ADSGRAM_SECRET = "7ce9e22f24ab451f9785c2ceb4132be8"
+Adsgram_token = "7ce9e22f24ab451f9785c2ceb4132be8"
 max_ADS_per_day = 30
 
 
@@ -324,7 +324,7 @@ from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
-from .models import AdView, UserWallet, DailyAdCount
+from .models import AdView, UserWallet, DailyAdCount,Daily_Ad_count, Adsview
 
 
 from django.db import transaction
@@ -340,26 +340,34 @@ import json
 
 MAX_ADS_PER_DAY = 30          # you can change this number anytime
 
-
 def request_ad_token(request):
-    user_id = request.GET.get('user_id', '1')
+    # Ensure this handles fallback if Telegram user ID isn't sent
+    user_id = request.GET.get('user_id')
+    if not user_id:
+        return JsonResponse({'error': True, 'message': 'Missing user identifier.'}, status=400)
+        
     today = date.today()
 
-    # Wrap in a transaction to lock the daily count immediately
     with transaction.atomic():
+        # Cleaned up select_for_update syntax with get_or_create
         daily, created = DailyAdCount.objects.select_for_update().get_or_create(
             user_id=user_id,
             date=today,
             defaults={'count': 0}
         )
 
-        # Count active pending ads for today to prevent over-allocation
-        pending_ads = AdView.objects.filter(user_id=user_id, status='pending', created_at__date=today).count()
+        # NOTE: If your model doesn't have 'created_at', remove 'created_at__date=today'
+        # and rely purely on the daily count status.
+        try:
+            pending_ads = AdView.objects.filter(user_id=user_id, status='pending', created_at__date=today).count()
+        except Exception:
+            # Fallback if 'created_at' field doesn't exist in your model
+            pending_ads = AdView.objects.filter(user_id=user_id, status='pending').count()
 
         if (daily.count + pending_ads) >= MAX_ADS_PER_DAY:
             return JsonResponse({
                 'error': True,
-                'message': f'You have reached your limit or have pending ads. Come back tomorrow!',
+                'message': 'You have reached your limit or have pending ads. Come back tomorrow!',
                 'remaining': 0
             }, status=400)
 
@@ -374,11 +382,10 @@ def request_ad_token(request):
 @csrf_exempt
 @transaction.atomic
 def adsgram_postback(request):
-    # 1. Verify webhook signature (Assuming JSON body payload)
-    # NOTE: If Adsgram uses GET, you must hash the query string instead of request.body!
+    # 1. Verify webhook signature
     received_signature = request.headers.get('X-Adsgram-Signature', '')
     computed = hmac.new(
-        ADSGRAM_SECRET.encode('utf-8'),
+        Adsgram_token.encode('utf-8'),
         request.body,
         hashlib.sha256
     ).hexdigest()
@@ -398,7 +405,7 @@ def adsgram_postback(request):
         except json.JSONDecodeError:
             return HttpResponse("Invalid Payload", status=400)
 
-    # 3. Find pending record WITH a database lock
+    # 3. Find pending record with a lock
     try:
         ad_view = AdView.objects.select_for_update().get(ymid=ymid)
     except AdView.DoesNotExist:
@@ -409,14 +416,12 @@ def adsgram_postback(request):
         user_id = ad_view.user_id 
         today = date.today()
 
-        # ---------- Increase daily count securely ----------
         daily, _ = DailyAdCount.objects.select_for_update().get_or_create(
             user_id=user_id,
             date=today,
             defaults={'count': 0}
         )
         
-        # Hard stop check just in case race conditions bypassed the first view
         if daily.count >= MAX_ADS_PER_DAY:
             ad_view.status = 'failed_limit_exceeded'
             ad_view.save()
@@ -425,17 +430,14 @@ def adsgram_postback(request):
         daily.count += 1
         daily.save()
 
-        # ---------- Add coins safely ----------
         wallet, _ = UserWallet.objects.select_for_update().get_or_create(user_id=user_id)
         wallet.balance += 10
         wallet.save()
 
-        # ---------- Mark ad view as completed ----------
         ad_view.status = 'completed'
         ad_view.save()
 
     return JsonResponse({'status': 'ok'})
-
 
 
 

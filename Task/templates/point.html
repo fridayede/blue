@@ -2394,6 +2394,7 @@ checkRemaining();
                     startCountdown();
 
                 } catch (err) {
+                    console.error('Full trigger error details:', err);
                     console.warn('[Adsgram] Ad error/skip:', err);
                     setStatus('❌ Ad was skipped or unavailable. Try again.', 'error');
                     watchBtn.disabled = false;
