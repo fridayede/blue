@@ -2834,24 +2834,29 @@ checkRemaining();
             // FETCH REMAINING ADS COUNT
             // ------------------------------------------------------------
             async function fetchRemaining() {
-                try {
-                    const resp = await fetch('{% url "Task:get_ad_token" %}', {
-                        method: 'GET',
-                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                    });
-                    const data = await resp.json();
-                    if (data.remaining !== undefined) {
-                        adRemaining.textContent = data.remaining;
-                    } else {
-                        adRemaining.textContent = '0';
-                    }
-                    return data;
-                } catch (err) {
-                    console.error('Fetch remaining error:', err);
-                    adRemaining.textContent = '?';
-                    return null;
-                }
-            }
+    try {
+        // 🔹 Get the user ID from Telegram WebApp
+        const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+        const userId = tgUser ? tgUser.id : "";
+
+        // 🔹 Append it to your URL parameters
+        const resp = await fetch(`{% url "Task:get_ad_token" %}?user_id=${userId}`, {
+            method: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const data = await resp.json();
+        if (data.remaining !== undefined) {
+            adRemaining.textContent = data.remaining;
+        } else {
+            adRemaining.textContent = '0';
+        }
+        return data;
+    } catch (err) {
+        console.error('Fetch remaining error:', err);
+        adRemaining.textContent = '?';
+        return null;
+    }
+}
 
             // ------------------------------------------------------------
             // COUNTDOWN TIMER
@@ -2934,21 +2939,27 @@ checkRemaining();
             // TRIGGER AD PLAYBACK (button handler)
             // ------------------------------------------------------------
             async function triggerAd() {
-                // Prevent double-clicks
-                if (isAdPlaying) return;
-                if (watchBtn.disabled) return;
+    if (isAdPlaying) return;
+    if (watchBtn.disabled) return;
 
-                isAdPlaying = true;
-                watchBtn.disabled = true;
-                watchBtn.innerHTML = '<i class="bi bi-arrow-repeat spinner"></i> Loading...';
-                setStatus('🔄 Requesting ad token...', 'loading');
+    isAdPlaying = true;
+    watchBtn.disabled = true;
+    watchBtn.innerHTML = '<i class="bi bi-arrow-repeat spinner"></i> Loading...';
+    setStatus('🔄 Requesting ad token...', 'loading');
 
-                try {
-                    const resp = await fetch('{% url "Task:get_ad_token" %}', {
-                        method: 'GET',
-                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                    });
+    try {
+        // 🔹 Get the user ID here as well
+        const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+        const userId = tgUser ? tgUser.id : "";
 
+        // 🔹 Append it to your URL parameters
+        const resp = await fetch(`{% url "Task:get_ad_token" %}?user_id=${userId}`, {
+            method: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+
+        const data = await resp.json();
+        // ... (rest of your logic remains completely unchanged)
                     const data = await resp.json();
 
                     if (!resp.ok || data.error) {

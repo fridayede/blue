@@ -341,6 +341,7 @@ import json
 MAX_ADS_PER_DAY = 30          # you can change this number anytime
 def request_ad_token(request):
     # 1. Safely extract user_id
+    user = request.GET.get('user')
     user_id = request.GET.get('user_id')
     print(f"Received user_id: {user_id}")  # Debugging line
     
@@ -385,7 +386,6 @@ def request_ad_token(request):
             'remaining': MAX_ADS_PER_DAY - daily.count - pending_ads
         })
 
-        
 @csrf_exempt
 @transaction.atomic
 def adsgram_postback(request):
