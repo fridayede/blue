@@ -343,6 +343,7 @@ MAX_ADS_PER_DAY = 30          # you can change this number anytime
 def request_ad_token(request):
    # 1. Extract the user_id from the GET parameters first
     user_id = request.GET.get('user_id')
+    print(f"Received user_id: {user_id}")  # Debugging line
     
     # 2. Fallback check: If frontend missed it, try the logged-in Django user
     if not user_id or user_id == "":
@@ -353,6 +354,7 @@ def request_ad_token(request):
             
     # 3. Now it is safe to assign or use 'user_id'
     user = user_id
+    print(user)
     today = date.today()
 
     with transaction.atomic():
