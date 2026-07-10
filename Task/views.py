@@ -341,7 +341,8 @@ import json
 MAX_ADS_PER_DAY = 30          # you can change this number anytime
 
 def request_ad_token(request):
-    user=user_id
+    user= request.user 
+    user = user_id # Assuming user is authenticated via Django's auth system
     # Ensure this handles fallback if Telegram user ID isn't sent
     user_id = request.GET.get('user_id')
 
