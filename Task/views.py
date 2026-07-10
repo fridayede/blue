@@ -343,8 +343,10 @@ MAX_ADS_PER_DAY = 30          # you can change this number anytime
 def request_ad_token(request):
     # Ensure this handles fallback if Telegram user ID isn't sent
     user_id = request.GET.get('user_id')
+
     print(user_id)
     if not user_id:
+        print(user_id)
         return JsonResponse({'error': True, 'message': 'Missing user identifier.'}, status=400)
         
     today = date.today()
