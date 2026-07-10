@@ -339,8 +339,8 @@ import json
 
 
 MAX_ADS_PER_DAY = 30          # you can change this number anytime
-
 def request_ad_token(request):
+    # 1. Safely extract user_id
     user_id = request.GET.get('user_id')
     print(f"Received user_id: {user_id}")  # Debugging line
     
@@ -351,9 +351,7 @@ def request_ad_token(request):
         else:
             return JsonResponse({'error': True, 'message': 'Missing user identifier.'}, status=400)
             
-    # 3. Now it is safe to assign or use 'user_id'
     user = user_id
-    print(user)
     today = date.today()
 
     with transaction.atomic():
@@ -364,14 +362,12 @@ def request_ad_token(request):
             defaults={'count': 0}
         )
 
-        # NOTE: If your model doesn't have 'created_at', remove 'created_at__date=today'
-        # and rely purely on the daily count status.
         try:
             pending_ads = AdView.objects.filter(user_id=user_id, status='pending', created_at__date=today).count()
         except Exception:
-            # Fallback if 'created_at' field doesn't exist in your model
             pending_ads = AdView.objects.filter(user_id=user_id, status='pending').count()
 
+        # Check limits
         if (daily.count + pending_ads) >= MAX_ADS_PER_DAY:
             return JsonResponse({
                 'error': True,
@@ -379,14 +375,17 @@ def request_ad_token(request):
                 'remaining': 0
             }, status=400)
 
+        # Generate UUID inside the safe tracking scope
         ymid = str(uuid.uuid4())
         AdView.objects.create(user_id=user_id, ymid=ymid, status='pending')
 
-    return JsonResponse({
-        'ymid': ymid,
-        'remaining': MAX_ADS_PER_DAY - daily.count - pending_ads
-    })
+        # ✅ Return directly inside the atomic block so variables are strictly guaranteed to exist
+        return JsonResponse({
+            'ymid': ymid,
+            'remaining': MAX_ADS_PER_DAY - daily.count - pending_ads
+        })
 
+        
 @csrf_exempt
 @transaction.atomic
 def adsgram_postback(request):
