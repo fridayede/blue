@@ -2450,7 +2450,7 @@ checkRemaining();
 
                 } catch (err) {
                     console.error('Trigger error:', err);
-                    setStatus('❌ Network error. Please try again.', 'error');
+                    setStatus('❌ Network error. Please try again.', 'error' err);
                     watchBtn.disabled = false;
                     watchBtn.innerHTML = '<i class="bi bi-play-circle-fill"></i> Watch Video';
                     isAdPlaying = false;
