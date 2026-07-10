@@ -2429,7 +2429,7 @@ checkRemaining();
 
 
 
-{% comment %} 
+ 
 
 <!DOCTYPE html>
 {% load static %}
@@ -2447,6 +2447,7 @@ checkRemaining();
 
     <!-- Telegram & AdsGram SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.adsgram.ai/js/sad.min.js"></script>
     <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
 
     <style>
@@ -3012,10 +3013,10 @@ checkRemaining();
     </script>
 
 </body>
-</html> {% endcomment %}
+</html> 
 
 
-
+{% comment %} 
 <!DOCTYPE html>
 {% load static %}
 <html lang="en">
@@ -3352,7 +3353,7 @@ checkRemaining();
                 if (typeof window.Adsgram !== 'undefined') {
                     AdController = window.Adsgram.init({
                         blockId: ADSGRAM_BLOCK_ID,
-                        debug: true, 
+                        debug: false, 
                     });
                     console.log('[Adsgram] Initialized successfully.');
                 } else {
@@ -3528,4 +3529,4 @@ checkRemaining();
         })();
     </script>
 </body>
-</html>
+</html> {% endcomment %}
