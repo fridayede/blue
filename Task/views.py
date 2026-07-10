@@ -342,6 +342,7 @@ MAX_ADS_PER_DAY = 30          # you can change this number anytime
 
 def request_ad_token(request):
     # Ensure this handles fallback if Telegram user ID isn't sent
+    user = request.user
     user = request.GET.get('user_id')
     if not user:
         return JsonResponse({'error': True, 'message': 'Missing user identifier.'}, status=400)
@@ -413,11 +414,11 @@ def adsgram_postback(request):
 
     # 4. Process reward securely if pending
     if reward_event == 'valued' and ad_view.status == 'pending':
-        user_id = ad_view.user_id 
+        user = ad_view.user_id 
         today = date.today()
 
         daily, _ = DailyAdCount.objects.select_for_update().get_or_create(
-            user_id=user_id,
+            user=user,
             date=today,
             defaults={'count': 0}
         )
