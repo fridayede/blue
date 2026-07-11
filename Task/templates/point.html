@@ -362,26 +362,21 @@
             // ------------------------------------------------------------
             // INIT ADSGRAM
             // ------------------------------------------------------------
+            
             let AdController = null;
+
             try {
                 if (typeof window.Adsgram !== 'undefined') {
-                    AdController = window.Adsgram.init({
-                        blockId: ADSGRAM_BLOCK_ID,
-                        userId: userId,
-                         debug: false,
-                    });
-                    console.log('[Adsgram] Initialized successfully.');
-                } else {
-                    console.warn('[Adsgram] SDK not loaded.');
-                    statusMsg.textContent = '⚠️ Ad service unavailable.';
-                    statusMsg.className = 'status-msg error';
-                }
+                AdController = window.Adsgram.init({
+                blockId: ADSGRAM_BLOCK_ID,
+                debug: false
+                });
+
+                console.log('[Adsgram] Initialized successfully.');
+            }
             } catch (e) {
                 console.error('[Adsgram] Init error:', e);
-                statusMsg.textContent = '⚠️ Ad service error.';
-                statusMsg.className = 'status-msg error';
             }
-
             // ------------------------------------------------------------
             // HELPERS
             // ------------------------------------------------------------
