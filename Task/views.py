@@ -383,62 +383,144 @@ def request_ad_token(request):
 @csrf_exempt
 @transaction.atomic
 def adsgram_postback(request):
-    # 1. Verify webhook signature
-    received_signature = request.headers.get('X-Adsgram-Signature', '')
-    computed = hmac.new(
-        Adsgram_token.encode('utf-8'),
-        request.body,
-        hashlib.sha256
-    ).hexdigest()
-    
-    if not hmac.compare_digest(computed, received_signature):
-        return HttpResponse("Invalid signature", status=400)
+    # AdsGram replaces [userId] with the value passed as userId
+    email = request.GET.get("userId")
 
-    # 2. Extract Data
-    ymid = request.GET.get('ymid')
-    reward_event = request.GET.get('reward_event_type')
+    if not email:
+        return HttpResponse("Missing userId", status=400)
 
-    if not ymid or not reward_event:
-        try:
-            body_data = json.loads(request.body)
-            ymid = body_data.get('ymid')
-            reward_event = body_data.get('reward_event_type')
-        except json.JSONDecodeError:
-            return HttpResponse("Invalid Payload", status=400)
-
-    # 3. Find pending record with a lock
     try:
-        ad_view = AdView.objects.select_for_update().get(ymid=ymid)
-    except AdView.DoesNotExist:
-        return HttpResponse("Ad tracking ID not found", status=404)
+        user = User.objects.select_for_update().get(email=email)
+    except User.DoesNotExist:
+        return HttpResponse("User not found", status=404)
 
-    # 4. Process reward securely if pending
-    if reward_event == 'valued' and ad_view.status == 'pending':
-        user_id = ad_view.user_id 
-        today = date.today()
+    today = date.today()
 
-        daily, _ = DailyAdCount.objects.select_for_update().get_or_create(
-            user_id=user_id,
-            date=today,
-            defaults={'count': 0}
-        )
+    daily, _ = DailyAdCount.objects.select_for_update().get_or_create(
+        user=user,
+        date=today,
+        defaults={"count": 0}
+    )
+
+    if daily.count >= MAX_ADS_PER_DAY:
+        return HttpResponse("Daily limit reached", status=400)
+
+    wallet, _ = UserWallet.objects.select_for_update().get_or_create(
+        user=user
+    )
+
+    wallet.balance += 10
+    wallet.save()
+
+    daily.count += 1
+    daily.save()
+
+    print("Reward added to:", user.email)
+
+    return JsonResponse({
+        "status": "ok",
+        "message": "Reward added"
+    })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# @transaction.atomic
+# def adsgram_postback(request):
+#     email = request.GET.get("userId")
+
+#     if not email:
+#         return HttpResponse("Missing userId", status=400)
+
+#     try:
+#         user = User.objects.select_for_update().get(email=email)
+#     except User.DoesNotExist:
+#         return HttpResponse("User not found", status=404)
+
+#     print("Reward for:", user.email)
+
+#     # 1. Verify webhook signature
+#     received_signature = request.headers.get('X-Adsgram-Signature', '')
+#     computed = hmac.new(
+#         Adsgram_token.encode('utf-8'),
+#         request.body,
+#         hashlib.sha256
+#     ).hexdigest()
+    
+#     if not hmac.compare_digest(computed, received_signature):
+#         return HttpResponse("Invalid signature", status=400)
+
+#     # 2. Extract Data
+#     ymid = request.GET.get("userId")
+#     reward_event = request.GET.get('reward_event_type')
+
+#     if not ymid or not reward_event:
+#         try:
+#             body_data = json.loads(request.body)
+#             ymid = body_data.get('ymid')
+#             reward_event = body_data.get('reward_event_type')
+#         except json.JSONDecodeError:
+#             return HttpResponse("Invalid Payload", status=400)
+
+#     # 3. Find pending record with a lock
+#     try:
+#         ad_view = AdView.objects.select_for_update().get(ymid=ymid)
+#     except AdView.DoesNotExist:
+#         return HttpResponse("Ad tracking ID not found", status=404)
+
+#     # 4. Process reward securely if pending
+#     if reward_event == 'valued' and ad_view.status == 'pending':
+#         user_id = ad_view.user_id 
+#         today = date.today()
+
+#         daily, _ = DailyAdCount.objects.select_for_update().get_or_create(
+#             user_id=user_id,
+#             date=today,
+#             defaults={'count': 0}
+#         )
         
-        if daily.count >= MAX_ADS_PER_DAY:
-            ad_view.status = 'failed_limit_exceeded'
-            ad_view.save()
-            return HttpResponse("Daily limit already reached", status=400)
+#         if daily.count >= MAX_ADS_PER_DAY:
+#             ad_view.status = 'failed_limit_exceeded'
+#             ad_view.save()
+#             return HttpResponse("Daily limit already reached", status=400)
 
-        daily.count += 1
-        daily.save()
+#         daily.count += 1
+#         daily.save()
 
-        wallet, _ = UserWallet.objects.select_for_update().get_or_create(user_id=user_id)
-        wallet.balance += 10
-        wallet.save()
+#         wallet, _ = UserWallet.objects.select_for_update().get_or_create(user_id=user_id)
+#         wallet.balance += 10
+#         wallet.save()
 
-        ad_view.status = 'completed'
-        ad_view.save()
+#         ad_view.status = 'completed'
+#         ad_view.save()
 
-    return JsonResponse({'status': 'ok'})
+#     return JsonResponse({'status': 'ok'})
 
 
 

@@ -356,14 +356,8 @@
             // ------------------------------------------------------------
             // GET TELEGRAM USER ID (if available)
             // ------------------------------------------------------------
-            let userId = '';
-            if (window.Telegram && window.Telegram.WebApp) {
-                const tg = window.Telegram.WebApp;
-                tg.ready();
-                if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                    userId = tg.initDataUnsafe.user.id;
-                }
-            }
+            const userId = "{{ request.user.email|escapejs }}";
+            console.log("User email:", userId);
 
             // ------------------------------------------------------------
             // INIT ADSGRAM
@@ -373,7 +367,8 @@
                 if (typeof window.Adsgram !== 'undefined') {
                     AdController = window.Adsgram.init({
                         blockId: ADSGRAM_BLOCK_ID,
-                        debug: false, // set to true for testing
+                        userId: userId,
+                         debug: false,
                     });
                     console.log('[Adsgram] Initialized successfully.');
                 } else {

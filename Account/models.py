@@ -9,7 +9,11 @@ import uuid
 
 class User(AbstractBaseUser,PermissionsMixin):
     email = models.EmailField(unique=True,max_length=255)
-    
+    telegram_id = models.BigIntegerField(
+        unique=True,
+        null=True,
+        blank=True
+    )
     password = models.CharField(max_length=128)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
