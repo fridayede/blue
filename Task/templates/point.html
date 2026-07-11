@@ -331,237 +331,542 @@
     </script>
 
     <!-- ===== MAIN APPLICATION SCRIPT ===== -->
-    <script>
-        (function() {
-            'use strict';
+   <script>
+(function () {
+    'use strict';
 
-            // ------------------------------------------------------------
-            // CONFIGURATION
-            // ------------------------------------------------------------
-            const ADSGRAM_BLOCK_ID = "36322";
-            const COOLDOWN_SECONDS = 30; // seconds to wait after each ad
+    // ------------------------------------------------------------
+    // CONFIGURATION
+    // ------------------------------------------------------------
+    const ADSGRAM_BLOCK_ID = "36322";
+    const COOLDOWN_SECONDS = 30;
 
-            // ------------------------------------------------------------
-            // DOM REFS
-            // ------------------------------------------------------------
-            const watchBtn = document.getElementById('watchBtn');
-            const statusMsg = document.getElementById('statusMsg');
-            const adRemaining = document.getElementById('adRemaining');
-            const countdownBox = document.getElementById('countdownBox');
-            const countdownNumber = document.getElementById('countdownNumber');
+    // ------------------------------------------------------------
+    // DOM REFS
+    // ------------------------------------------------------------
+    const watchBtn = document.getElementById('watchBtn');
+    const statusMsg = document.getElementById('statusMsg');
+    const adRemaining = document.getElementById('adRemaining');
+    const countdownBox = document.getElementById('countdownBox');
+    const countdownNumber = document.getElementById('countdownNumber');
 
-            let countdownInterval = null;
-            let isAdPlaying = false;
+    let countdownInterval = null;
+    let isAdPlaying = false;
 
-            // ------------------------------------------------------------
-            // GET TELEGRAM USER ID (if available)
-            // ------------------------------------------------------------
-            const userId = "{{ request.user.email|escapejs }}";
-            console.log("User email:", userId);
+    // ------------------------------------------------------------
+    // DJANGO LOGGED-IN USER
+    // ------------------------------------------------------------
+    const userEmail = "{{ request.user.email|escapejs }}";
 
-            // ------------------------------------------------------------
-            // INIT ADSGRAM
-            // ------------------------------------------------------------
-            
-            let AdController = null;
+    console.log("Django user email:", userEmail);
 
-            try {
-                if (typeof window.Adsgram !== 'undefined') {
-                AdController = window.Adsgram.init({
+    // ------------------------------------------------------------
+    // GET TELEGRAM ID AND SAVE IT TO THE DJANGO USER
+    // ------------------------------------------------------------
+    if (window.Telegram && window.Telegram.WebApp) {
+
+        const tg = window.Telegram.WebApp;
+
+        tg.ready();
+
+        const telegramUser = tg.initDataUnsafe?.user;
+
+        if (telegramUser && telegramUser.id) {
+
+            const telegramId = telegramUser.id;
+
+            console.log("Telegram ID:", telegramId);
+
+            fetch("{% url 'Task:save_telegram_id' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": "{{ csrf_token }}"
+                },
+                body: JSON.stringify({
+                    telegram_id: telegramId
+                })
+            })
+            .then(async response => {
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        data.error || "Unable to save Telegram ID"
+                    );
+                }
+
+                return data;
+            })
+            .then(data => {
+                console.log(
+                    "Telegram ID connected successfully:",
+                    data
+                );
+            })
+            .catch(error => {
+                console.error(
+                    "Telegram ID save error:",
+                    error
+                );
+            });
+
+        } else {
+            console.warn(
+                "Telegram user information was not found."
+            );
+        }
+
+    } else {
+        console.warn(
+            "This page is not running inside Telegram."
+        );
+    }
+
+    // ------------------------------------------------------------
+    // INIT ADSGRAM
+    // ------------------------------------------------------------
+    let AdController = null;
+
+    try {
+
+        if (typeof window.Adsgram !== 'undefined') {
+
+            AdController = window.Adsgram.init({
                 blockId: ADSGRAM_BLOCK_ID,
                 debug: false
-                });
-
-                console.log('[Adsgram] Initialized successfully.');
-            }
-            } catch (e) {
-                console.error('[Adsgram] Init error:', e);
-            }
-            // ------------------------------------------------------------
-            // HELPERS
-            // ------------------------------------------------------------
-            function setStatus(text, type) {
-                statusMsg.textContent = text;
-                statusMsg.className = 'status-msg';
-                if (type) statusMsg.classList.add(type);
-            }
-
-            function getTokenUrl() {
-                const base = '{% url "Task:get_ad_token" %}';
-                return userId ? `${base}?user_id=${encodeURIComponent(userId)}` : base;
-            }
-
-            // ------------------------------------------------------------
-            // FETCH REMAINING ADS COUNT
-            // ------------------------------------------------------------
-            async function fetchRemaining() {
-                try {
-                    const resp = await fetch(getTokenUrl(), {
-                        method: 'GET',
-                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                    });
-                    const data = await resp.json();
-                    if (data.remaining !== undefined) {
-                        adRemaining.textContent = data.remaining;
-                    } else {
-                        adRemaining.textContent = '0';
-                    }
-                    return data;
-                } catch (err) {
-                    console.error('Fetch remaining error:', err);
-                    adRemaining.textContent = '?';
-                    return null;
-                }
-            }
-
-            // ------------------------------------------------------------
-            // COUNTDOWN TIMER
-            // ------------------------------------------------------------
-            function startCountdown() {
-                if (countdownInterval) {
-                    clearInterval(countdownInterval);
-                    countdownInterval = null;
-                }
-
-                let seconds = COOLDOWN_SECONDS;
-                countdownBox.classList.remove('hidden');
-                countdownNumber.textContent = seconds;
-                watchBtn.disabled = true;
-                watchBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Wait...';
-
-                countdownInterval = setInterval(() => {
-                    seconds -= 1;
-                    countdownNumber.textContent = seconds;
-
-                    if (seconds <= 0) {
-                        clearInterval(countdownInterval);
-                        countdownInterval = null;
-                        countdownBox.classList.add('hidden');
-                        watchBtn.disabled = false;
-                        watchBtn.innerHTML = '<i class="bi bi-play-circle-fill"></i> Watch Video';
-                        setStatus('Ready to watch another ad!', '');
-                        fetchRemaining();
-                    }
-                }, 1000);
-            }
-
-            // ------------------------------------------------------------
-            // PLAY AD
-            // ------------------------------------------------------------
-            async function playAd(ymid) {
-                if (!AdController) {
-                    setStatus('❌ Ad service not initialized.', 'error');
-                    resetButton();
-                    return;
-                }
-
-                setStatus('⏳ Loading advertisement...', 'loading');
-
-                try {
-                    await AdController.show({ ymid: ymid });
-                    // Ad completed successfully
-                    setStatus('✅ Ad completed! Points awarded.', 'success');
-
-                    // Decrement remaining locally
-                    let current = parseInt(adRemaining.textContent, 10);
-                    if (!isNaN(current) && current > 0) {
-                        adRemaining.textContent = current - 1;
-                    } else {
-                        fetchRemaining(); // refresh from server
-                    }
-
-                    startCountdown();
-
-                } catch (err) {
-                    // User skipped or error
-                    console.warn('[Adsgram] Ad error/skip:', err);
-                    setStatus('❌ Ad was skipped or unavailable. Try again.', 'error');
-                    resetButton();
-                    fetchRemaining();
-                } finally {
-                    isAdPlaying = false;
-                }
-            }
-
-            function resetButton() {
-                watchBtn.disabled = false;
-                watchBtn.innerHTML = '<i class="bi bi-play-circle-fill"></i> Watch Video';
-                isAdPlaying = false;
-            }
-
-            // ------------------------------------------------------------
-            // TRIGGER AD PLAYBACK (button handler)
-            // ------------------------------------------------------------
-            async function triggerAd() {
-                if (isAdPlaying || watchBtn.disabled) return;
-
-                isAdPlaying = true;
-                watchBtn.disabled = true;
-                watchBtn.innerHTML = '<i class="bi bi-arrow-repeat"></i> Loading...';
-                setStatus('🔄 Requesting ad token...', 'loading');
-
-                try {
-                    const resp = await fetch(getTokenUrl(), {
-                        method: 'GET',
-                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                    });
-
-                    const data = await resp.json();
-
-                    if (!resp.ok || data.error) {
-                        setStatus('❌ ' + (data.message || 'Unable to load ad.'), 'error');
-                        resetButton();
-                        if (data.remaining !== undefined) {
-                            adRemaining.textContent = data.remaining;
-                        }
-                        return;
-                    }
-
-                    // Update remaining count
-                    if (data.remaining !== undefined) {
-                        adRemaining.textContent = data.remaining;
-                    }
-
-                    // Play the ad with the token
-                    await playAd(data.ymid);
-
-                } catch (err) {
-                    console.error('Trigger error:', err);
-                    setStatus('❌ Network error. Please try again.', 'error');
-                    resetButton();
-                }
-            }
-
-            // ------------------------------------------------------------
-            // WIRE UP BUTTON
-            // ------------------------------------------------------------
-            watchBtn.addEventListener('click', triggerAd);
-
-            // ------------------------------------------------------------
-            // INIT ON LOAD
-            // ------------------------------------------------------------
-            window.addEventListener('DOMContentLoaded', function() {
-                fetchRemaining().then(data => {
-                    if (data && data.remaining === 0) {
-                        watchBtn.disabled = true;
-                        watchBtn.innerHTML = '🚫 Limit Reached';
-                        setStatus('You have reached your daily ad limit.', 'error');
-                    }
-                });
             });
 
-            // ------------------------------------------------------------
-            // REFRESH REMAINING WHEN TAB BECOMES VISIBLE
-            // ------------------------------------------------------------
-            document.addEventListener('visibilitychange', function() {
-                if (!document.hidden) {
+            console.log(
+                "[Adsgram] Initialized successfully."
+            );
+
+        } else {
+
+            console.warn(
+                "[Adsgram] SDK not loaded."
+            );
+
+            setStatus(
+                '⚠️ Ad service unavailable.',
+                'error'
+            );
+        }
+
+    } catch (error) {
+
+        console.error(
+            "[Adsgram] Init error:",
+            error
+        );
+
+        setStatus(
+            '⚠️ Ad service error.',
+            'error'
+        );
+    }
+
+    // ------------------------------------------------------------
+    // HELPERS
+    // ------------------------------------------------------------
+    function setStatus(text, type) {
+
+        statusMsg.textContent = text;
+        statusMsg.className = 'status-msg';
+
+        if (type) {
+            statusMsg.classList.add(type);
+        }
+    }
+
+    function getTokenUrl() {
+
+        const base =
+            '{% url "Task:get_ad_token" %}';
+
+        return `${base}?user_id=${
+            encodeURIComponent(userEmail)
+        }`;
+    }
+
+    // ------------------------------------------------------------
+    // FETCH REMAINING ADS
+    // ------------------------------------------------------------
+    async function fetchRemaining() {
+
+        try {
+
+            const resp = await fetch(
+                getTokenUrl(),
+                {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With':
+                            'XMLHttpRequest'
+                    }
+                }
+            );
+
+            const raw = await resp.text();
+
+            console.log(
+                "Remaining status:",
+                resp.status
+            );
+
+            console.log(
+                "Remaining response:",
+                raw
+            );
+
+            let data;
+
+            try {
+                data = JSON.parse(raw);
+            } catch {
+                throw new Error(
+                    `Server returned ${
+                        resp.status
+                    }: ${
+                        raw.substring(0, 300)
+                    }`
+                );
+            }
+
+            if (
+                data.remaining !== undefined
+            ) {
+                adRemaining.textContent =
+                    data.remaining;
+            }
+
+            return data;
+
+        } catch (error) {
+
+            console.error(
+                "Fetch remaining error:",
+                error
+            );
+
+            adRemaining.textContent = '?';
+
+            return null;
+        }
+    }
+
+    // ------------------------------------------------------------
+    // COUNTDOWN
+    // ------------------------------------------------------------
+    function startCountdown() {
+
+        if (countdownInterval) {
+
+            clearInterval(
+                countdownInterval
+            );
+
+            countdownInterval = null;
+        }
+
+        let seconds =
+            COOLDOWN_SECONDS;
+
+        countdownBox.classList.remove(
+            'hidden'
+        );
+
+        countdownNumber.textContent =
+            seconds;
+
+        watchBtn.disabled = true;
+
+        watchBtn.innerHTML =
+            '<i class="bi bi-hourglass-split"></i> Wait...';
+
+        countdownInterval =
+            setInterval(() => {
+
+                seconds -= 1;
+
+                countdownNumber.textContent =
+                    seconds;
+
+                if (seconds <= 0) {
+
+                    clearInterval(
+                        countdownInterval
+                    );
+
+                    countdownInterval =
+                        null;
+
+                    countdownBox.classList.add(
+                        'hidden'
+                    );
+
+                    watchBtn.disabled =
+                        false;
+
+                    watchBtn.innerHTML =
+                        '<i class="bi bi-play-circle-fill"></i> Watch Video';
+
+                    setStatus(
+                        'Ready to watch another ad!',
+                        ''
+                    );
+
                     fetchRemaining();
                 }
-            });
 
-            console.log('[App] Ready.');
-        })();
-    </script>
+            }, 1000);
+    }
+
+    // ------------------------------------------------------------
+    // RESET BUTTON
+    // ------------------------------------------------------------
+    function resetButton() {
+
+        watchBtn.disabled = false;
+
+        watchBtn.innerHTML =
+            '<i class="bi bi-play-circle-fill"></i> Watch Video';
+
+        isAdPlaying = false;
+    }
+
+    // ------------------------------------------------------------
+    // PLAY ADSGRAM AD
+    // ------------------------------------------------------------
+    async function playAd() {
+
+        if (!AdController) {
+
+            setStatus(
+                '❌ Ad service not initialized.',
+                'error'
+            );
+
+            resetButton();
+
+            return;
+        }
+
+        setStatus(
+            '⏳ Loading advertisement...',
+            'loading'
+        );
+
+        try {
+
+            await AdController.show();
+
+            setStatus(
+                '✅ Ad completed! Waiting for reward confirmation.',
+                'success'
+            );
+
+            startCountdown();
+
+        } catch (error) {
+
+            console.warn(
+                '[Adsgram] Ad error/skip:',
+                error
+            );
+
+            setStatus(
+                '❌ Ad was skipped or unavailable. Try again.',
+                'error'
+            );
+
+            resetButton();
+
+        } finally {
+
+            isAdPlaying = false;
+        }
+    }
+
+    // ------------------------------------------------------------
+    // WATCH VIDEO BUTTON
+    // ------------------------------------------------------------
+    async function triggerAd() {
+
+        if (
+            isAdPlaying ||
+            watchBtn.disabled
+        ) {
+            return;
+        }
+
+        isAdPlaying = true;
+
+        watchBtn.disabled = true;
+
+        watchBtn.innerHTML =
+            '<i class="bi bi-arrow-repeat"></i> Loading...';
+
+        setStatus(
+            '🔄 Checking ad availability...',
+            'loading'
+        );
+
+        try {
+
+            const resp = await fetch(
+                getTokenUrl(),
+                {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With':
+                            'XMLHttpRequest'
+                    }
+                }
+            );
+
+            const raw =
+                await resp.text();
+
+            console.log(
+                "TOKEN STATUS:",
+                resp.status
+            );
+
+            console.log(
+                "TOKEN RESPONSE:",
+                raw
+            );
+
+            let data;
+
+            try {
+
+                data =
+                    JSON.parse(raw);
+
+            } catch {
+
+                throw new Error(
+                    `Server returned ${
+                        resp.status
+                    }: ${
+                        raw.substring(0, 300)
+                    }`
+                );
+            }
+
+            if (
+                !resp.ok ||
+                data.error
+            ) {
+
+                setStatus(
+                    '❌ ' +
+                    (
+                        data.message ||
+                        'Unable to load ad.'
+                    ),
+                    'error'
+                );
+
+                resetButton();
+
+                if (
+                    data.remaining !==
+                    undefined
+                ) {
+                    adRemaining.textContent =
+                        data.remaining;
+                }
+
+                return;
+            }
+
+            if (
+                data.remaining !==
+                undefined
+            ) {
+                adRemaining.textContent =
+                    data.remaining;
+            }
+
+            // Show the AdsGram ad
+            await playAd();
+
+        } catch (error) {
+
+            console.error(
+                'Trigger error:',
+                error
+            );
+
+            setStatus(
+                '❌ Network error. Please try again.',
+                'error'
+            );
+
+            resetButton();
+        }
+    }
+
+    // ------------------------------------------------------------
+    // BUTTON EVENT
+    // ------------------------------------------------------------
+    watchBtn.addEventListener(
+        'click',
+        triggerAd
+    );
+
+    // ------------------------------------------------------------
+    // PAGE LOAD
+    // ------------------------------------------------------------
+    window.addEventListener(
+        'DOMContentLoaded',
+        function () {
+
+            fetchRemaining()
+                .then(data => {
+
+                    if (
+                        data &&
+                        data.remaining === 0
+                    ) {
+
+                        watchBtn.disabled =
+                            true;
+
+                        watchBtn.innerHTML =
+                            '🚫 Limit Reached';
+
+                        setStatus(
+                            'You have reached your daily ad limit.',
+                            'error'
+                        );
+                    }
+                });
+        }
+    );
+
+    // ------------------------------------------------------------
+    // REFRESH WHEN USER RETURNS TO PAGE
+    // ------------------------------------------------------------
+    document.addEventListener(
+        'visibilitychange',
+        function () {
+
+            if (!document.hidden) {
+                fetchRemaining();
+            }
+        }
+    );
+
+    console.log(
+        '[App] Ready.'
+    );
+
+})();
+</script>
 
 </body>
 </html>

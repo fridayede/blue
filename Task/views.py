@@ -316,6 +316,41 @@ def point(request: HttpRequest) -> HttpResponse:
     """Renders the standard user points interface page."""
     return render(request, "point.html")
 
+@csrf_exempt
+@login_required
+def save_telegram_id(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "POST required"}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        telegram_id = data.get("telegram_id")
+
+        if not telegram_id:
+            return JsonResponse(
+                {"error": "Missing telegram_id"},
+                status=400
+            )
+
+        request.user.telegram_id = telegram_id
+        request.user.save(update_fields=["telegram_id"])
+
+        print(
+            "Telegram account connected:",
+            request.user.email,
+            "->",
+            telegram_id
+        )
+
+        return JsonResponse({
+            "status": "success",
+            "telegram_id": telegram_id
+        })
+
+    except Exception as e:
+        print("Telegram ID save error:", str(e))
+        return JsonResponse({"error": str(e)}, status=400)
+
 import uuid
 import hmac
 import hashlib

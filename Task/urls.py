@@ -10,7 +10,11 @@ urlpatterns = [
     # path('ad-token/', views.request_ad_token, name='ad_token'),
     path('get-ad-token/', views.request_ad_token, name='get_ad_token'),
     path('adsgram-postback/', views.adsgram_postback, name='adsgram_postback'),
-   
+   path(
+    "save-telegram-id/",
+    views.save_telegram_id,
+    name="save_telegram_id"
+),
     path('point/', views.point, name='point'),
     
 ]
