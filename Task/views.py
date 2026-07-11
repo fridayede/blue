@@ -339,51 +339,42 @@ import json
 
 
 MAX_ADS_PER_DAY = 30          # you can change this number anytime
+@login_required
 def request_ad_token(request):
-    # 1. Safely extract user_id
-    user = request.GET.get('user')
-    user_id = request.GET.get('user_id')
-    print(f"Received user_id: {user_id}")  # Debugging line
-    
-    # 2. Fallback check: If frontend missed it, try the logged-in Django user
-    if not user_id or user_id == "":
-        if request.user.is_authenticated:
-            user_id = str(request.user.id)
-        else:
-            return JsonResponse({'error': True, 'message': 'Missing user identifier.'}, status=400)
-            
-    user = user_id
+    user = request.user
     today = date.today()
 
     with transaction.atomic():
-        # Cleaned up select_for_update syntax with get_or_create
         daily, created = DailyAdCount.objects.select_for_update().get_or_create(
-            user_id=user_id,
+            user=user,
             date=today,
-            defaults={'count': 0}
+            defaults={"count": 0}
         )
 
-        try:
-            pending_ads = AdView.objects.filter(user_id=user_id, status='pending', created_at__date=today).count()
-        except Exception:
-            pending_ads = AdView.objects.filter(user_id=user_id, status='pending').count()
+        pending_ads = AdView.objects.filter(
+            user=user,
+            status="pending",
+            created_at__date=today
+        ).count()
 
-        # Check limits
         if (daily.count + pending_ads) >= MAX_ADS_PER_DAY:
             return JsonResponse({
-                'error': True,
-                'message': 'You have reached your limit or have pending ads. Come back tomorrow!',
-                'remaining': 0
+                "error": True,
+                "message": "Daily ad limit reached.",
+                "remaining": 0
             }, status=400)
 
-        # Generate UUID inside the safe tracking scope
         ymid = str(uuid.uuid4())
-        AdView.objects.create(user_id=user_id, ymid=ymid, status='pending')
 
-        # ✅ Return directly inside the atomic block so variables are strictly guaranteed to exist
+        AdView.objects.create(
+            user=user,
+            ymid=ymid,
+            status="pending"
+        )
+
         return JsonResponse({
-            'ymid': ymid,
-            'remaining': MAX_ADS_PER_DAY - daily.count - pending_ads
+            "ymid": ymid,
+            "remaining": MAX_ADS_PER_DAY - daily.count - pending_ads
         })
 
 @csrf_exempt
