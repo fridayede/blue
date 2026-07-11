@@ -343,7 +343,7 @@ MAX_ADS_PER_DAY = 30          # you can change this number anytime
 def request_ad_token(request):
     print(request.user)
     print("Requesting ad token for user:", request.user)
-    print(user)
+    
     user = request.user
     today = date.today()
 
