@@ -143,7 +143,7 @@ def task(request, id):
 import uuid
 import hmac
 import hashlib
-from datetime import date, datetime
+from datetime import date, datetime, time
 from django.http import JsonResponse,HttpRequest
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
@@ -191,41 +191,20 @@ def point(request: HttpRequest) -> HttpResponse:
 @login_required
 @csrf_exempt
 def save_telegram_id(request):
-    if request.method != "POST":
-        return JsonResponse({"error": "POST required"}, status=405)
-
     try:
         data = json.loads(request.body)
-
         telegram_id = data.get("telegram_id")
-
         if not telegram_id:
-            return JsonResponse(
-                {"error": "Missing telegram_id"},
-                status=400
-            )
-
+            return JsonResponse({"error": "Missing telegram_id"}, status=400)
         request.user.telegram_id = telegram_id
         request.user.save(update_fields=["telegram_id"])
-
-        print(
-            "Telegram account connected:",
-            request.user.email,
-            "->",
-            telegram_id
-        )
-
-        return JsonResponse({
-            "status": "success",
-            "telegram_id": telegram_id
-        })
-
+        return JsonResponse({"status": "success", "telegram_id": telegram_id})
     except Exception as e:
-        print("Telegram ID save error:", str(e))
-        return JsonResponse(
-            {"error": str(e)},
-            status=400
-        )
+        return JsonResponse({"error": str(e)}, status=400)
+    
+
+
+
 import uuid
 import hmac
 import hashlib
@@ -251,35 +230,15 @@ import json
 MAX_ADS_PER_DAY = 50          # you can change this number anytime
 @login_required
 def request_ad_token(request):
-    telegram_id = request.GET.get("user_id")
-
-    print("Requesting ad for logged-in user:", request.user)
-    print("Telegram ID received:", telegram_id)
-
-    if not telegram_id:
-        return JsonResponse({
-            "error": True,
-            "message": "Missing Telegram ID"
-        }, status=400)
-
-    try:
-        user = User.objects.get(telegram_id=telegram_id)
-    except User.DoesNotExist:
-        return JsonResponse({
-            "error": True,
-            "message": "User not found"
-        }, status=404)
+    user = request.user
+    if not user.telegram_id:
+        return JsonResponse({"error": True, "message": "Telegram ID not linked"}, status=400)
 
     today = date.today()
-
     with transaction.atomic():
-
-        daily, created = DailyAdCount.objects.select_for_update().get_or_create(
-            user=user,
-            date=today,
-            defaults={"count": 0}
+        daily, _ = DailyAdCount.objects.select_for_update().get_or_create(
+            user=user, date=today, defaults={"count": 0}
         )
-
         if daily.count >= MAX_ADS_PER_DAY:
             return JsonResponse({
                 "error": True,
@@ -287,9 +246,18 @@ def request_ad_token(request):
                 "remaining": 0
             }, status=400)
 
+        timestamp = int(time.time())
+        payload = f"{user.telegram_id}|{timestamp}"
+        signature = hmac.new(
+            Adsgram_token.encode(),
+            payload.encode(),
+            hashlib.sha256
+        ).hexdigest()
+        token = f"{payload}|{signature}"
+
         return JsonResponse({
             "success": True,
-            "userId": str(user.telegram_id),
+            "ymid": token,
             "remaining": MAX_ADS_PER_DAY - daily.count
         })
 
@@ -347,84 +315,56 @@ def request_ad_token(request):
 @transaction.atomic
 def adsgram_postback(request):
 
+     
     print("🔥 ADSGRAM CALLBACK RECEIVED")
-    print(request.GET)
+    print("GET DATA:", request.GET)
+    print("POST DATA:", request.POST)
 
-    telegram_id = request.GET.get("userId")
+    token = request.GET.get("userId")
+    print("Token extracted:", token)
 
-    print(
-        "ADSGram postback received:",
-        telegram_id
-    )
-
-    if not telegram_id:
-        return JsonResponse({
-            "error": "Missing userId"
-        }, status=400)
-
+    if not token:
+        return JsonResponse({"error": "Missing token"}, status=400)
 
     try:
+        parts = token.split('|')
+        if len(parts) != 3:
+            raise ValueError("Invalid token format")
+        telegram_id, timestamp_str, signature = parts
+        timestamp = int(timestamp_str)
+        if time.time() - timestamp > 300:
+            return JsonResponse({"error": "Token expired"}, status=400)
+        payload = f"{telegram_id}|{timestamp_str}"
+        expected = hmac.new(
+            Adsgram_token.encode(),
+            payload.encode(),
+            hashlib.sha256
+        ).hexdigest()
+        if not hmac.compare_digest(signature, expected):
+            return JsonResponse({"error": "Invalid signature"}, status=400)
+    except Exception as e:
+        print("Token verification error:", e)
+        return JsonResponse({"error": "Invalid token"}, status=400)
 
-        user = User.objects.select_for_update().get(
-            telegram_id=telegram_id
-        )
-
+    try:
+        user = User.objects.select_for_update().get(telegram_id=telegram_id)
     except User.DoesNotExist:
-
-        return JsonResponse({
-            "error": "User not found"
-        }, status=404)
-
-
+        return JsonResponse({"error": "User not found"}, status=404)
 
     today = date.today()
-
-
-    daily, created = DailyAdCount.objects.select_for_update().get_or_create(
-        user=user,
-        date=today,
-        defaults={
-            "count":0
-        }
+    daily, _ = DailyAdCount.objects.select_for_update().get_or_create(
+        user=user, date=today, defaults={"count": 0}
     )
-
-
     if daily.count >= MAX_ADS_PER_DAY:
+        return JsonResponse({"error": "Daily limit reached"}, status=400)
 
-        return JsonResponse({
-            "error":"Daily limit reached"
-        }, status=400)
-
-
-
-    wallet, created = UserWallet.objects.select_for_update().get_or_create(
-        user=user
-    )
-
-
+    wallet, _ = UserWallet.objects.select_for_update().get_or_create(user=user)
     wallet.balance += 10
     wallet.save()
-
-
-
     daily.count += 1
     daily.save()
 
-
-
-    print(
-        "✅ Reward added:",
-        user.email,
-        user.telegram_id
-    )
-
-
-    return JsonResponse({
-
-        "status":"success",
-        "message":"Reward added"
-
-    })
+    return JsonResponse({"status": "success", "message": "Reward added"})
 
 
 
