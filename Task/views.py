@@ -438,17 +438,21 @@ def request_ad_token(request):
             "remaining": MAX_ADS_PER_DAY - daily.count - pending_ads
         })
 
+
 @csrf_exempt
 @transaction.atomic
 def adsgram_postback(request):
-    # AdsGram replaces [userId] with the value passed as userId
-    email = request.GET.get("userId")
+    telegram_id = request.GET.get("userId")
 
-    if not email:
+    print("ADSGram postback received:", telegram_id)
+
+    if not telegram_id:
         return HttpResponse("Missing userId", status=400)
 
     try:
-        user = User.objects.select_for_update().get(email=email)
+        user = User.objects.select_for_update().get(
+            telegram_id=telegram_id
+        )
     except User.DoesNotExist:
         return HttpResponse("User not found", status=404)
 
@@ -474,19 +478,16 @@ def adsgram_postback(request):
     daily.save()
 
     print(
-    "Reward added:",
-    user.email,
-    "Telegram ID:",
-    user.telegram_id
-)
+        "Reward added:",
+        user.email,
+        "Telegram ID:",
+        user.telegram_id
+    )
 
     return JsonResponse({
         "status": "ok",
         "message": "Reward added"
     })
-
-
-
 
 
 
