@@ -94,7 +94,8 @@ def task(request, id):
             return redirect("Task:task", id=ad.id)
 
         # 🔥 TIMER CHECK (IMPORTANT ADDITION)
-        from django.utils import timezone
+            import time
+            from datetime import date
 
         time_passed = timezone.now() - user_task.started_at
 
@@ -145,7 +146,8 @@ import hmac
 import hashlib
 from datetime import date, datetime, time
 from django.http import JsonResponse,HttpRequest
-from django.utils import timezone
+import time
+from datetime import date
 from django.views.decorators.csrf import csrf_exempt
 from .models import Daily_Ad_count,Adsview
 from  Swap.models import Swap
@@ -212,7 +214,8 @@ from datetime import date
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.utils import timezone
+import time
+from datetime import date
 from .models import AdView, UserWallet, DailyAdCount,Daily_Ad_count, Adsview
 
 
