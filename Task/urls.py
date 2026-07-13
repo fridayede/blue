@@ -16,6 +16,7 @@ urlpatterns = [
     name="save_telegram_id"
 ),
     path('point/', views.point, name='point'),
+    path('adsgram-postback/', views.adsgram_debug, name='adsgram_postback'),
     
 ]
 # path('details/<int:product_id>/',views.product_detail, name="product_detail")

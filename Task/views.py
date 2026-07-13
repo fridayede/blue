@@ -372,7 +372,16 @@ def adsgram_postback(request):
 
 
 
+from django.http import HttpResponse
 
+@csrf_exempt
+def adsgram_debug(request):
+    print("🔥🔥🔥 ANY REQUEST TO ADSGRAM POSTBACK 🔥🔥🔥")
+    print("METHOD:", request.method)
+    print("GET:", request.GET)
+    print("POST:", request.POST)
+    print("BODY:", request.body)
+    return HttpResponse("ok")
 
 
 
