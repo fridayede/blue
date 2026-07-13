@@ -332,7 +332,7 @@
 
     <!-- ===== MAIN APPLICATION SCRIPT ===== -->
  
-   <script>
+<script>
 (function () {
     'use strict';
 
@@ -356,18 +356,14 @@
     // ------------------------------------------------------------
     let countdownInterval = null;
     let isAdPlaying = false;
-
     let telegramId = null;
     let telegramReady = false;
-
     let AdController = null;
-
 
     // ------------------------------------------------------------
     // STATUS MESSAGE
     // ------------------------------------------------------------
     function setStatus(text, type = '') {
-
         statusMsg.textContent = text;
         statusMsg.className = 'status-msg';
 
@@ -376,20 +372,13 @@
         }
     }
 
-
     // ------------------------------------------------------------
     // GET TELEGRAM ID AND SAVE IT TO DJANGO USER
     // ------------------------------------------------------------
     async function connectTelegramUser() {
 
-        if (
-            !window.Telegram ||
-            !window.Telegram.WebApp
-        ) {
-
-            console.warn(
-                "Telegram WebApp is not available."
-            );
+        if (!window.Telegram || !window.Telegram.WebApp) {
+            console.warn("Telegram WebApp is not available.");
 
             setStatus(
                 "❌ Please open this page inside Telegram.",
@@ -399,21 +388,13 @@
             return false;
         }
 
-
         const tg = window.Telegram.WebApp;
 
         tg.ready();
 
+        const telegramUser = tg.initDataUnsafe?.user;
 
-        const telegramUser =
-            tg.initDataUnsafe?.user;
-
-
-        if (
-            !telegramUser ||
-            !telegramUser.id
-        ) {
-
+        if (!telegramUser || !telegramUser.id) {
             console.warn(
                 "Telegram user information was not found."
             );
@@ -426,17 +407,12 @@
             return false;
         }
 
-
-        // Save Telegram ID globally
-        telegramId =
-            String(telegramUser.id);
-
+        telegramId = String(telegramUser.id);
 
         console.log(
             "Telegram ID:",
             telegramId
         );
-
 
         try {
 
@@ -446,11 +422,8 @@
                     method: "POST",
 
                     headers: {
-                        "Content-Type":
-                            "application/json",
-
-                        "X-CSRFToken":
-                            "{{ csrf_token }}"
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": "{{ csrf_token }}"
                     },
 
                     body: JSON.stringify({
@@ -459,10 +432,7 @@
                 }
             );
 
-
-            const raw =
-                await response.text();
-
+            const raw = await response.text();
 
             console.log(
                 "SAVE TELEGRAM STATUS:",
@@ -474,44 +444,32 @@
                 raw
             );
 
-
             let data;
 
-
             try {
-
-                data =
-                    JSON.parse(raw);
-
+                data = JSON.parse(raw);
             } catch {
-
                 throw new Error(
                     "Server returned invalid response: " +
                     raw.substring(0, 300)
                 );
             }
 
-
             if (!response.ok) {
-
                 throw new Error(
                     data.error ||
                     "Unable to save Telegram ID"
                 );
             }
 
-
             telegramReady = true;
-
 
             console.log(
                 "Telegram ID connected successfully:",
                 data
             );
 
-
             return true;
-
 
         } catch (error) {
 
@@ -520,17 +478,14 @@
                 error
             );
 
-
             setStatus(
                 "❌ Unable to connect Telegram account.",
                 "error"
             );
 
-
             return false;
         }
     }
-
 
     // ------------------------------------------------------------
     // CREATE GET AD TOKEN URL
@@ -540,15 +495,11 @@
         const base =
             '{% url "Task:get_ad_token" %}';
 
-
         return (
             `${base}?user_id=` +
-            encodeURIComponent(
-                telegramId
-            )
+            encodeURIComponent(telegramId)
         );
     }
-
 
     // ------------------------------------------------------------
     // INITIALIZE ADSGRAM
@@ -557,26 +508,16 @@
 
         try {
 
-            if (
-                typeof window.Adsgram !==
-                'undefined'
-            ) {
+            if (typeof window.Adsgram !== 'undefined') {
 
-                AdController =
-                    window.Adsgram.init({
-
-                        blockId:
-                            ADSGRAM_BLOCK_ID,
-
-                        debug:
-                            false
-                    });
-
+                AdController = window.Adsgram.init({
+                    blockId: ADSGRAM_BLOCK_ID,
+                    debug: false
+                });
 
                 console.log(
                     "[Adsgram] Initialized successfully."
                 );
-
 
                 return true;
 
@@ -586,12 +527,10 @@
                     "[Adsgram] SDK not loaded."
                 );
 
-
                 setStatus(
                     "⚠️ Ad service unavailable.",
                     "error"
                 );
-
 
                 return false;
             }
@@ -603,128 +542,14 @@
                 error
             );
 
-
             setStatus(
                 "⚠️ Ad service error.",
                 "error"
             );
 
-
             return false;
         }
     }
-
-
-    // ------------------------------------------------------------
-    // FETCH REMAINING ADS
-    // ------------------------------------------------------------
-    async function fetchRemaining() {
-
-        // Do not send request without Telegram ID
-        if (
-            !telegramReady ||
-            !telegramId
-        ) {
-
-            console.warn(
-                "Cannot fetch ads: Telegram ID is not ready."
-            );
-
-            return null;
-        }
-
-
-        try {
-
-            const resp = await fetch(
-                getTokenUrl(),
-                {
-                    method: 'GET',
-
-                    headers: {
-                        'X-Requested-With':
-                            'XMLHttpRequest'
-                    }
-                }
-            );
-
-
-            const raw =
-                await resp.text();
-
-
-            console.log(
-                "REMAINING STATUS:",
-                resp.status
-            );
-
-
-            console.log(
-                "REMAINING RESPONSE:",
-                raw
-            );
-
-
-            let data;
-
-
-            try {
-
-                data =
-                    JSON.parse(raw);
-
-            } catch {
-
-                throw new Error(
-                    `Server returned ${resp.status}: ` +
-                    raw.substring(0, 300)
-                );
-            }
-
-
-            if (
-                data.remaining !==
-                undefined
-            ) {
-
-                adRemaining.textContent =
-                    data.remaining;
-            }
-
-
-            if (
-                !resp.ok ||
-                data.error
-            ) {
-
-                console.error(
-                    "Remaining ads error:",
-                    data
-                );
-
-                return data;
-            }
-
-
-            return data;
-
-
-        } catch (error) {
-
-            console.error(
-                "Fetch remaining error:",
-                error
-            );
-
-
-            adRemaining.textContent =
-                '?';
-
-
-            return null;
-        }
-    }
-
 
     // ------------------------------------------------------------
     // COUNTDOWN
@@ -732,104 +557,64 @@
     function startCountdown() {
 
         if (countdownInterval) {
-
-            clearInterval(
-                countdownInterval
-            );
-
-            countdownInterval =
-                null;
+            clearInterval(countdownInterval);
+            countdownInterval = null;
         }
 
+        let seconds = COOLDOWN_SECONDS;
 
-        let seconds =
-            COOLDOWN_SECONDS;
+        countdownBox.classList.remove('hidden');
 
+        countdownNumber.textContent = seconds;
 
-        countdownBox.classList.remove(
-            'hidden'
-        );
-
-
-        countdownNumber.textContent =
-            seconds;
-
-
-        watchBtn.disabled =
-            true;
-
+        watchBtn.disabled = true;
 
         watchBtn.innerHTML =
             '<i class="bi bi-hourglass-split"></i> Wait...';
 
+        countdownInterval = setInterval(
+            function () {
 
-        countdownInterval =
-            setInterval(
-                function () {
+                seconds -= 1;
 
-                    seconds -= 1;
+                countdownNumber.textContent = seconds;
 
+                if (seconds <= 0) {
 
-                    countdownNumber.textContent =
-                        seconds;
+                    clearInterval(countdownInterval);
 
+                    countdownInterval = null;
 
-                    if (seconds <= 0) {
+                    countdownBox.classList.add('hidden');
 
-                        clearInterval(
-                            countdownInterval
-                        );
+                    watchBtn.disabled = false;
 
+                    watchBtn.innerHTML =
+                        '<i class="bi bi-play-circle-fill"></i> Watch Video';
 
-                        countdownInterval =
-                            null;
+                    setStatus(
+                        'Ready to watch another ad!',
+                        ''
+                    );
+                }
 
-
-                        countdownBox.classList.add(
-                            'hidden'
-                        );
-
-
-                        watchBtn.disabled =
-                            false;
-
-
-                        watchBtn.innerHTML =
-                            '<i class="bi bi-play-circle-fill"></i> Watch Video';
-
-
-                        setStatus(
-                            'Ready to watch another ad!',
-                            ''
-                        );
-
-
-                        fetchRemaining();
-                    }
-
-                },
-                1000
-            );
+            },
+            1000
+        );
     }
-
 
     // ------------------------------------------------------------
     // RESET BUTTON
     // ------------------------------------------------------------
     function resetButton() {
 
-        watchBtn.disabled =
-            false;
-
+        watchBtn.disabled = false;
 
         watchBtn.innerHTML =
             '<i class="bi bi-play-circle-fill"></i> Watch Video';
 
-
-        isAdPlaying =
-            false;
+        isAdPlaying = false;
     }
-
 
     // ------------------------------------------------------------
     // PLAY ADSGRAM AD
@@ -843,33 +628,26 @@
                 'error'
             );
 
-
             resetButton();
-
 
             return;
         }
-
 
         setStatus(
             '⏳ Loading advertisement...',
             'loading'
         );
 
-
         try {
 
             await AdController.show();
-
 
             setStatus(
                 '✅ Ad completed! Waiting for reward confirmation.',
                 'success'
             );
 
-
             startCountdown();
-
 
         } catch (error) {
 
@@ -878,72 +656,49 @@
                 error
             );
 
-
             setStatus(
                 '❌ Ad was skipped or unavailable. Try again.',
                 'error'
             );
 
-
             resetButton();
-
 
         } finally {
 
-            isAdPlaying =
-                false;
+            isAdPlaying = false;
         }
     }
-
 
     // ------------------------------------------------------------
     // WATCH VIDEO BUTTON
     // ------------------------------------------------------------
     async function triggerAd() {
 
-        // Make sure Telegram is connected
-        if (
-            !telegramReady ||
-            !telegramId
-        ) {
+        if (!telegramReady || !telegramId) {
 
             setStatus(
                 '❌ Telegram account is not connected yet.',
                 'error'
             );
 
-
             return;
         }
 
-
-        // Prevent double clicks
-        if (
-            isAdPlaying ||
-            watchBtn.disabled
-        ) {
-
+        if (isAdPlaying || watchBtn.disabled) {
             return;
         }
 
+        isAdPlaying = true;
 
-        isAdPlaying =
-            true;
-
-
-        watchBtn.disabled =
-            true;
-
+        watchBtn.disabled = true;
 
         watchBtn.innerHTML =
             '<i class="bi bi-arrow-repeat"></i> Loading...';
-
 
         setStatus(
             '🔄 Checking ad availability...',
             'loading'
         );
-
 
         try {
 
@@ -959,30 +714,23 @@
                 }
             );
 
-
-            const raw =
-                await resp.text();
-
+            const raw = await resp.text();
 
             console.log(
                 "TOKEN STATUS:",
                 resp.status
             );
 
-
             console.log(
                 "TOKEN RESPONSE:",
                 raw
             );
 
-
             let data;
-
 
             try {
 
-                data =
-                    JSON.parse(raw);
+                data = JSON.parse(raw);
 
             } catch {
 
@@ -992,11 +740,7 @@
                 );
             }
 
-
-            if (
-                !resp.ok ||
-                data.error
-            ) {
+            if (!resp.ok || data.error) {
 
                 setStatus(
                     '❌ ' +
@@ -1007,37 +751,27 @@
                     'error'
                 );
 
-
                 resetButton();
 
-
-                if (
-                    data.remaining !==
-                    undefined
-                ) {
-
+                if (data.remaining !== undefined) {
                     adRemaining.textContent =
                         data.remaining;
                 }
 
-
                 return;
             }
 
-
-            if (
-                data.remaining !==
-                undefined
-            ) {
-
+            if (data.remaining !== undefined) {
                 adRemaining.textContent =
                     data.remaining;
             }
 
+            console.log(
+                "Ad token created:",
+                data.ymid
+            );
 
-            // Show AdsGram advertisement
             await playAd();
-
 
         } catch (error) {
 
@@ -1046,17 +780,14 @@
                 error
             );
 
-
             setStatus(
                 '❌ Network error. Please try again.',
                 'error'
             );
 
-
             resetButton();
         }
     }
-
 
     // ------------------------------------------------------------
     // WATCH BUTTON EVENT
@@ -1066,14 +797,8 @@
         triggerAd
     );
 
-
     // ------------------------------------------------------------
     // PAGE STARTUP
-    // IMPORTANT:
-    // 1. Get Telegram ID
-    // 2. Save Telegram ID
-    // 3. Initialize AdsGram
-    // 4. Fetch remaining ads
     // ------------------------------------------------------------
     async function startApp() {
 
@@ -1081,108 +806,59 @@
             "[App] Starting..."
         );
 
-
-        // Disable button until Telegram is connected
-        watchBtn.disabled =
-            true;
-
+        watchBtn.disabled = true;
 
         watchBtn.innerHTML =
             '<i class="bi bi-arrow-repeat"></i> Connecting...';
-
 
         setStatus(
             '🔄 Connecting Telegram account...',
             'loading'
         );
 
-
-        // Connect Telegram first
+        // Connect Telegram
         const connected =
             await connectTelegramUser();
 
-
         if (!connected) {
 
-            watchBtn.disabled =
-                true;
-
+            watchBtn.disabled = true;
 
             watchBtn.innerHTML =
                 '❌ Telegram Required';
 
-
             return;
         }
-
 
         // Initialize AdsGram
         const adsgramReady =
             initializeAdsGram();
 
-
         if (!adsgramReady) {
 
-            watchBtn.disabled =
-                true;
-
+            watchBtn.disabled = true;
 
             watchBtn.innerHTML =
                 '❌ Ad Service Unavailable';
 
-
             return;
         }
-
-
-        // Get remaining ads
-        const data =
-            await fetchRemaining();
-
-
-        if (
-            data &&
-            data.remaining === 0
-        ) {
-
-            watchBtn.disabled =
-                true;
-
-
-            watchBtn.innerHTML =
-                '🚫 Limit Reached';
-
-
-            setStatus(
-                'You have reached your daily ad limit.',
-                'error'
-            );
-
-
-            return;
-        }
-
 
         // Everything is ready
-        watchBtn.disabled =
-            false;
-
+        watchBtn.disabled = false;
 
         watchBtn.innerHTML =
             '<i class="bi bi-play-circle-fill"></i> Watch Video';
-
 
         setStatus(
             'Ready to watch an ad!',
             ''
         );
 
-
         console.log(
             "[App] Ready."
         );
     }
-
 
     // ------------------------------------------------------------
     // START APP WHEN PAGE LOADS
@@ -1190,25 +866,6 @@
     window.addEventListener(
         'DOMContentLoaded',
         startApp
-    );
-
-
-    // ------------------------------------------------------------
-    // REFRESH REMAINING ADS WHEN USER RETURNS
-    // ------------------------------------------------------------
-    document.addEventListener(
-        'visibilitychange',
-        function () {
-
-            if (
-                !document.hidden &&
-                telegramReady &&
-                telegramId
-            ) {
-
-                fetchRemaining();
-            }
-        }
     );
 
 })();
