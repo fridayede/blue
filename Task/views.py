@@ -473,7 +473,12 @@ def adsgram_postback(request):
     daily.count += 1
     daily.save()
 
-    print("Reward added to:", user.email)
+    print(
+    "Reward added:",
+    user.email,
+    "Telegram ID:",
+    user.telegram_id
+)
 
     return JsonResponse({
         "status": "ok",
