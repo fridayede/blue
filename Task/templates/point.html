@@ -331,15 +331,15 @@
     </script>
 
     <!-- ===== MAIN APPLICATION SCRIPT ===== -->
-   <script>
-(function () {
+ <script>
+    (function () {
     'use strict';
 
     // ------------------------------------------------------------
     // CONFIGURATION
     // ------------------------------------------------------------
     const ADSGRAM_BLOCK_ID = "36322";
-    const COOLDOWN_SECONDS = 30;
+    const COOLDOWN_SECONDS = 50;
 
     // ------------------------------------------------------------
     // DOM REFS
@@ -356,9 +356,35 @@
     // ------------------------------------------------------------
     // DJANGO LOGGED-IN USER
     // ------------------------------------------------------------
-    const userEmail = "{{ request.user.email|escapejs }}";
 
-    console.log("Django user email:", userEmail);
+         // TELEGRAM USER ID
+let telegramId = null;
+
+if (window.Telegram && window.Telegram.WebApp) {
+
+    const tg = window.Telegram.WebApp;
+
+    tg.ready();
+
+    const telegramUser = tg.initDataUnsafe?.user;
+
+    if (telegramUser && telegramUser.id) {
+
+        telegramId = telegramUser.id;
+
+        console.log(
+            "Telegram ID:",
+            telegramId
+        );
+
+    } else {
+
+        console.warn(
+            "Telegram user not found"
+        );
+    }
+
+}
 
     // ------------------------------------------------------------
     // GET TELEGRAM ID AND SAVE IT TO THE DJANGO USER
@@ -481,13 +507,13 @@
 
     function getTokenUrl() {
 
-        const base =
-            '{% url "Task:get_ad_token" %}';
+    const base =
+        '{% url "Task:get_ad_token" %}';
 
-        return `${base}?user_id=${
-            encodeURIComponent(userEmail)
-        }`;
-    }
+    return `${base}?user_id=${
+        encodeURIComponent(telegramId)
+    }`;
+}
 
     // ------------------------------------------------------------
     // FETCH REMAINING ADS
@@ -866,7 +892,7 @@
         '[App] Ready.'
     );
 
-})();
+    })();
 </script>
 
 </body>

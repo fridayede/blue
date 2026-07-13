@@ -17,6 +17,10 @@ import hashlib
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
 
 
 
@@ -316,14 +320,16 @@ def point(request: HttpRequest) -> HttpResponse:
     """Renders the standard user points interface page."""
     return render(request, "point.html")
 
-@csrf_exempt
+
 @login_required
+@csrf_exempt
 def save_telegram_id(request):
     if request.method != "POST":
         return JsonResponse({"error": "POST required"}, status=405)
 
     try:
         data = json.loads(request.body)
+
         telegram_id = data.get("telegram_id")
 
         if not telegram_id:
@@ -349,8 +355,10 @@ def save_telegram_id(request):
 
     except Exception as e:
         print("Telegram ID save error:", str(e))
-        return JsonResponse({"error": str(e)}, status=400)
-
+        return JsonResponse(
+            {"error": str(e)},
+            status=400
+        )
 import uuid
 import hmac
 import hashlib
@@ -379,7 +387,22 @@ def request_ad_token(request):
     print(request.user)
     print("Requesting ad token for user:", request.user)
     
-    user = request.user
+    telegram_id = request.GET.get("user_id")
+
+    if not telegram_id:
+        return JsonResponse({
+        "error": True,
+        "message": "Missing Telegram ID"
+    }, status=400)
+
+    try:
+        user = User.objects.get(telegram_id=telegram_id)
+    except User.DoesNotExist:
+        return JsonResponse({
+            "error": True,
+            "message": "User not found"
+        }, status=404)
+
     today = date.today()
 
     with transaction.atomic():
