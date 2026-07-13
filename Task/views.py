@@ -381,7 +381,7 @@ import json
 
 
 
-MAX_ADS_PER_DAY = 30          # you can change this number anytime
+MAX_ADS_PER_DAY = 50          # you can change this number anytime
 @login_required
 def request_ad_token(request):
     print(request.user)
