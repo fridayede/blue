@@ -251,16 +251,16 @@ import json
 MAX_ADS_PER_DAY = 50          # you can change this number anytime
 @login_required
 def request_ad_token(request):
-    print(request.user)
-    print("Requesting ad token for user:", request.user)
-    
     telegram_id = request.GET.get("user_id")
+
+    print("Requesting ad for logged-in user:", request.user)
+    print("Telegram ID received:", telegram_id)
 
     if not telegram_id:
         return JsonResponse({
-        "error": True,
-        "message": "Missing Telegram ID"
-    }, status=400)
+            "error": True,
+            "message": "Missing Telegram ID"
+        }, status=400)
 
     try:
         user = User.objects.get(telegram_id=telegram_id)
@@ -273,38 +273,25 @@ def request_ad_token(request):
     today = date.today()
 
     with transaction.atomic():
+
         daily, created = DailyAdCount.objects.select_for_update().get_or_create(
             user=user,
             date=today,
             defaults={"count": 0}
         )
 
-        pending_ads = AdView.objects.filter(
-            user=user,
-            status="pending",
-            created_at__date=today
-        ).count()
-
-        if (daily.count + pending_ads) >= MAX_ADS_PER_DAY:
+        if daily.count >= MAX_ADS_PER_DAY:
             return JsonResponse({
                 "error": True,
                 "message": "Daily ad limit reached.",
                 "remaining": 0
             }, status=400)
 
-        ymid = str(uuid.uuid4())
-
-        AdView.objects.create(
-            user=user,
-            ymid=ymid,
-            status="pending"
-        )
-
         return JsonResponse({
-            "ymid": ymid,
-            "remaining": MAX_ADS_PER_DAY - daily.count - pending_ads
+            "success": True,
+            "userId": str(user.telegram_id),
+            "remaining": MAX_ADS_PER_DAY - daily.count
         })
-
 
 # @csrf_exempt
 # @transaction.atomic
