@@ -360,6 +360,7 @@
     let telegramId = null;
     let telegramReady = false;
     let AdController = null;
+    let currentYmid = null;
 
     // ------------------------------------------------------------
     // STATUS MESSAGE
@@ -507,50 +508,50 @@
     // ------------------------------------------------------------
     function initializeAdsGram() {
 
-        try {
+    try {
 
-            if (typeof window.Adsgram !== 'undefined') {
+        if (typeof window.Adsgram !== 'undefined') {
 
-                AdController = window.Adsgram.init({
-                    blockId: ADSGRAM_BLOCK_ID,
-                    debug: false
-                });
+            AdController = window.Adsgram.init({
+                blockId: ADSGRAM_BLOCK_ID,
+                debug: false
+            });
 
-                console.log(
-                    "[Adsgram] Initialized successfully."
-                );
+            console.log(
+                "[Adsgram] Initialized successfully."
+            );
 
-                return true;
+            return true;
 
-            } else {
+        } else {
 
-                console.warn(
-                    "[Adsgram] SDK not loaded."
-                );
-
-                setStatus(
-                    "⚠️ Ad service unavailable.",
-                    "error"
-                );
-
-                return false;
-            }
-
-        } catch (error) {
-
-            console.error(
-                "[Adsgram] Initialization error:",
-                error
+            console.warn(
+                "[Adsgram] SDK not loaded."
             );
 
             setStatus(
-                "⚠️ Ad service error.",
+                "⚠️ Ad service unavailable.",
                 "error"
             );
 
             return false;
         }
+
+    } catch (error) {
+
+        console.error(
+            "[Adsgram] Initialization error:",
+            error
+        );
+
+        setStatus(
+            "⚠️ Ad service error.",
+            "error"
+        );
+
+        return false;
     }
+}
 
     // ------------------------------------------------------------
     // COUNTDOWN
@@ -767,12 +768,14 @@
                     data.remaining;
             }
 
+            currentYmid = data.ymid;
+
             console.log(
                 "Ad token created:",
-                data.ymid
+             currentYmid
             );
 
-            await playAd();
+                await playAd();
 
         } catch (error) {
 
