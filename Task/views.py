@@ -383,7 +383,7 @@ def adsgram_debug(request):
     return HttpResponse("ok")
 
 
-
+@csrf_exempt
 def adsgram_postback(request):
     print("🔥 ADSGRAM CALLBACK RECEIVED")
     print("GET DATA:", request.GET)
@@ -391,44 +391,40 @@ def adsgram_postback(request):
     telegram_id = request.GET.get("userId")
 
     if not telegram_id:
-        return JsonResponse(
-            {"error": "Missing userId"},
-            status=400
+        return JsonResponse({"error": "Missing userId"}, status=400)
+
+    with transaction.atomic():
+
+        try:
+            user = User.objects.select_for_update().get(
+                telegram_id=telegram_id
+            )
+        except User.DoesNotExist:
+            return JsonResponse({"error": "User not found"}, status=404)
+
+        today = date.today()
+
+        daily, _ = DailyAdCount.objects.select_for_update().get_or_create(
+            user=user,
+            date=today,
+            defaults={"count": 0}
         )
 
-    try:
-        user = User.objects.select_for_update().get(
-            telegram_id=telegram_id
-        )
-    except User.DoesNotExist:
-        return JsonResponse(
-            {"error": "User not found"},
-            status=404
-        )
+        if daily.count >= MAX_ADS_PER_DAY:
+            return JsonResponse(
+                {"error": "Daily limit reached"},
+                status=400
+            )
 
-    today = date.today()
-
-    daily, _ = DailyAdCount.objects.select_for_update().get_or_create(
-        user=user,
-        date=today,
-        defaults={"count": 0}
-    )
-
-    if daily.count >= MAX_ADS_PER_DAY:
-        return JsonResponse(
-            {"error": "Daily limit reached"},
-            status=400
+        wallet, _ = UserWallet.objects.select_for_update().get_or_create(
+            user=user
         )
 
-    wallet, _ = UserWallet.objects.select_for_update().get_or_create(
-        user=user
-    )
+        wallet.balance += 10
+        wallet.save(update_fields=["balance"])
 
-    wallet.balance += 10
-    wallet.save(update_fields=["balance"])
-
-    daily.count += 1
-    daily.save(update_fields=["count"])
+        daily.count += 1
+        daily.save(update_fields=["count"])
 
     print("✅ REWARD ADDED TO:", telegram_id)
 
@@ -436,8 +432,6 @@ def adsgram_postback(request):
         "status": "success",
         "message": "Reward added"
     })
-
-
 
 
 
