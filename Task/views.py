@@ -316,63 +316,62 @@ def request_ad_token(request):
 
 @csrf_exempt
 @transaction.atomic
-def adsgram_postback(request):
+# def adsgram_postback(request):
 
      
-    print("🔥 ADSGRAM CALLBACK RECEIVED")
-    print("GET DATA:", request.GET)
-    print("POST DATA:", request.POST)
+#     print("🔥 ADSGRAM CALLBACK RECEIVED")
+#     print("GET DATA:", request.GET)
+#     print("POST DATA:", request.POST)
 
-    token = request.GET.get("userId")
-    print("Token extracted:", token)
+#     token = request.GET.get("userId")
+#     print("Token extracted:", token)
 
-    if not token:
-        return JsonResponse({"error": "Missing token"}, status=400)
+#     if not token:
+#         return JsonResponse({"error": "Missing token"}, status=400)
 
-    try:
-        parts = token.split('|')
-        if len(parts) != 3:
-            raise ValueError("Invalid token format")
-        telegram_id, timestamp_str, signature = parts
-        timestamp = int(timestamp_str)
-        if time.time() - timestamp > 300:
-            return JsonResponse({"error": "Token expired"}, status=400)
-        payload = f"{telegram_id}|{timestamp_str}"
-        expected = hmac.new(
-            Adsgram_token.encode(),
-            payload.encode(),
-            hashlib.sha256
-        ).hexdigest()
-        if not hmac.compare_digest(signature, expected):
-            return JsonResponse({"error": "Invalid signature"}, status=400)
-    except Exception as e:
-        print("Token verification error:", e)
-        return JsonResponse({"error": "Invalid token"}, status=400)
+#     try:
+#         parts = token.split('|')
+#         if len(parts) != 3:
+#             raise ValueError("Invalid token format")
+#         telegram_id, timestamp_str, signature = parts
+#         timestamp = int(timestamp_str)
+#         if time.time() - timestamp > 300:
+#             return JsonResponse({"error": "Token expired"}, status=400)
+#         payload = f"{telegram_id}|{timestamp_str}"
+#         expected = hmac.new(
+#             Adsgram_token.encode(),
+#             payload.encode(),
+#             hashlib.sha256
+#         ).hexdigest()
+#         if not hmac.compare_digest(signature, expected):
+#             return JsonResponse({"error": "Invalid signature"}, status=400)
+#     except Exception as e:
+#         print("Token verification error:", e)
+#         return JsonResponse({"error": "Invalid token"}, status=400)
 
-    try:
-        user = User.objects.select_for_update().get(telegram_id=telegram_id)
-    except User.DoesNotExist:
-        return JsonResponse({"error": "User not found"}, status=404)
+#     try:
+#         user = User.objects.select_for_update().get(telegram_id=telegram_id)
+#     except User.DoesNotExist:
+#         return JsonResponse({"error": "User not found"}, status=404)
 
-    today = date.today()
-    daily, _ = DailyAdCount.objects.select_for_update().get_or_create(
-        user=user, date=today, defaults={"count": 0}
-    )
-    if daily.count >= MAX_ADS_PER_DAY:
-        return JsonResponse({"error": "Daily limit reached"}, status=400)
+#     today = date.today()
+#     daily, _ = DailyAdCount.objects.select_for_update().get_or_create(
+#         user=user, date=today, defaults={"count": 0}
+#     )
+#     if daily.count >= MAX_ADS_PER_DAY:
+#         return JsonResponse({"error": "Daily limit reached"}, status=400)
 
-    wallet, _ = UserWallet.objects.select_for_update().get_or_create(user=user)
-    wallet.balance += 10
-    wallet.save()
-    daily.count += 1
-    daily.save()
+#     wallet, _ = UserWallet.objects.select_for_update().get_or_create(user=user)
+#     wallet.balance += 10
+#     wallet.save()
+#     daily.count += 1
+#     daily.save()
 
-    return JsonResponse({"status": "success", "message": "Reward added"})
-
-
+#     return JsonResponse({"status": "success", "message": "Reward added"})
 
 
-from django.http import HttpResponse
+
+
 
 @csrf_exempt
 def adsgram_debug(request):
@@ -385,7 +384,58 @@ def adsgram_debug(request):
 
 
 
+def adsgram_postback(request):
+    print("🔥 ADSGRAM CALLBACK RECEIVED")
+    print("GET DATA:", request.GET)
 
+    telegram_id = request.GET.get("userId")
+
+    if not telegram_id:
+        return JsonResponse(
+            {"error": "Missing userId"},
+            status=400
+        )
+
+    try:
+        user = User.objects.select_for_update().get(
+            telegram_id=telegram_id
+        )
+    except User.DoesNotExist:
+        return JsonResponse(
+            {"error": "User not found"},
+            status=404
+        )
+
+    today = date.today()
+
+    daily, _ = DailyAdCount.objects.select_for_update().get_or_create(
+        user=user,
+        date=today,
+        defaults={"count": 0}
+    )
+
+    if daily.count >= MAX_ADS_PER_DAY:
+        return JsonResponse(
+            {"error": "Daily limit reached"},
+            status=400
+        )
+
+    wallet, _ = UserWallet.objects.select_for_update().get_or_create(
+        user=user
+    )
+
+    wallet.balance += 10
+    wallet.save(update_fields=["balance"])
+
+    daily.count += 1
+    daily.save(update_fields=["count"])
+
+    print("✅ REWARD ADDED TO:", telegram_id)
+
+    return JsonResponse({
+        "status": "success",
+        "message": "Reward added"
+    })
 
 
 
