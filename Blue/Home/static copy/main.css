@@ -1,0 +1,85 @@
+/* Reset */
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* FULL SCREEN CENTERING */
+.page{
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    /* Background image */
+    background: url("../static/image/image.png") no-repeat center center/cover;
+}
+
+/* Card */
+.formconterner{
+    width: 320px;
+    padding: 25px;
+    border-radius: 20px;
+
+    /* Glass effect */
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+
+    border: 2px solid rgba(255,255,255,0.2);
+}
+
+/* Title */
+.login{
+    text-align: center;
+    font-size: 22px;
+    color: white;
+    margin-bottom: 20px;
+}
+
+/* Form */
+.input-group{
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+    position: relative;
+}
+
+.input-group label{
+    color: white;
+    margin-bottom: 5px;
+}
+
+.input-group input{
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+}
+
+/* Eye icon */
+.password-group i{
+    position: absolute;
+    right: 10px;
+    top: 38px;
+    cursor: pointer;
+    color: #000;
+}
+
+/* Button */
+.btn-box{
+    text-align: center;
+}
+
+.btn{
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    background: #00CFFF;
+    color: black;
+    cursor: pointer;
+}
+
+.btn:hover{
+    background: #4DEBFF;
+}

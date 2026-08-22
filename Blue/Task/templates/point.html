@@ -1,0 +1,2284 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Points Task</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+     <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+     <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+
+    <!-- Monetag SDK tag -->
+    <script src='//libtl.com/sdk.js' data-zone='11372618' data-sdk='show_11372618'></script>
+
+    <style>
+        {% comment %} 
+        adsgram styling
+        {% endcomment %}
+        .topbar2 {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #06152B, #0A1F3F, #003B6F, #00CFFF, #4DEBFF);
+        }
+        .topbar2 img {
+            width: 2.6rem;
+            height: 2.6rem;
+        }
+        .topbar2 .brand2 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 18px;
+            color: #fff;
+        }
+
+        .page-header2 { text-align: center; margin: 20px 0 8px; }
+        .page-header2 h1 { font-size: 24px; color: #4DEBFF; }
+        .page-header2 p { font-size: 15px; color: #9fb3c8; }
+
+        /* Nav tabs, matching the gradient top bar */
+        .nav-tabs-custom2 {
+            background: linear-gradient(135deg, #06152B, #0A1F3F, #003B6F, #00CFFF, #4DEBFF);
+            border-radius: 50px;
+            padding: 6px;
+            gap: 6px;
+            margin: 12px auto 20px;
+            max-width: 440px;
+            width: 92%;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            list-style: none;
+        }
+        .nav-tabs-custom2 .nav-link2 {
+            border-radius: 50px !important;
+            color: #fff !important;
+            padding: 8px 18px;
+            font-size: 15px;
+            font-weight: 500;
+            transition: 0.25s;
+            text-decoration: none;
+            flex: 1 1 auto;
+            text-align: center;
+            min-width: 70px;
+        }
+        .nav-tabs-custom2 .nav-link2.active2 {
+            background: #fff !important;
+            color: #0A1F3F !important;
+            font-weight: 600;
+            box-shadow: 0 2px 12px rgba(0, 207, 255, 0.4);
+        }
+        .nav-tabs-custom2 .nav-link2:hover:not(.active2) {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .ad-card2 {
+            background: #0A1F3F;
+            padding: 32px 24px 28px;
+            border-radius: 24px;
+            text-align: center;
+            width: 92%;
+            max-width: 420px;
+            margin: 16px auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid rgba(0, 207, 255, 0.15);
+        }
+        .ad-card2 h2 { font-size: 22px; color: #4DEBFF; margin-bottom: 4px; }
+        .ad-card2 .sub-info2 { font-size: 14px; color: #9fb3c8; margin-bottom: 20px; }
+
+        .remaining-badge2 {
+            background: #003B6F;
+            padding: 10px 16px;
+            border-radius: 14px;
+            margin-bottom: 22px;
+            font-size: 15px;
+            color: #cfe8fb;
+            display: inline-block;
+            width: 100%;
+        }
+        .remaining-badge2 span { font-weight: 700; color: #4DEBFF; font-size: 20px; }
+
+        .btn-watch2 {
+            background: linear-gradient(135deg, #06152B, #0A1F3F, #003B6F, #00CFFF, #4DEBFF);
+            color: #fff;
+            border: none;
+            padding: 15px 20px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 50px;
+            width: 100%;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .btn-watch2:hover:not(:disabled) { opacity: 0.9; }
+        .btn-watch2:disabled { background: #37506b; cursor: not-allowed; opacity: 0.7; }
+
+        /* Progress-bar style countdown */
+        .countdown-box2 {
+            margin-top: 22px;
+            background: #003B6F;
+            border-radius: 16px;
+            padding: 16px 14px;
+            border: 1px solid #00CFFF33;
+        }
+        .countdown-box2 p { color: #9fb3c8; font-size: 14px; margin-bottom: 10px; }
+        .progress2 {
+            height: 10px;
+            border-radius: 6px;
+            background: #06152B;
+            overflow: hidden;
+        }
+        .progress-bar2 {
+            height: 100%;
+            background: linear-gradient(135deg, #003B6F, #00CFFF, #4DEBFF);
+            transition: width 1s linear;
+        }
+        .countdown-number2 {
+            margin-top: 8px;
+            font-size: 32px;
+            font-weight: 700;
+            color: #4DEBFF;
+        }
+
+        .status-msg2 {
+            margin-top: 18px;
+            font-size: 15px;
+            color: #b0b8c8;
+            min-height: 44px;
+            padding: 6px 8px;
+            border-radius: 10px;
+            background: rgba(0,0,0,0.2);
+        }
+        .status-msg2.success2 { color: #4ade80; }
+        .status-msg2.error2 { color: #f87171; }
+        .status-msg2.loading2 { color: #60a5fa; }
+        .hidden2 { display: none !important; }
+
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 10px;
+            z-index: 1000;
+        }
+
+        /* Responsive tweaks */
+        @media (max-width: 480px) {
+            .ad-card2 {
+                padding: 24px 16px 22px;
+            }
+            .ad-card2 h2 {
+                font-size: 20px;
+            }
+            .btn-watch2 {
+                font-size: 16px;
+                padding: 13px 16px;
+            }
+            .countdown-number2 {
+                font-size: 26px;
+            }
+            .nav-tabs-custom2 .nav-link2 {
+                font-size: 13px;
+                padding: 6px 12px;
+                min-width: 60px;
+            }
+        }
+
+
+
+        {% comment %} 
+        end of adsgram styling
+        {% endcomment %}
+
+        {% comment %} 
+        ads contaner
+        {% endcomment %}
+/* ===========================
+   ADS CONTAINER
+=========================== */
+
+.ads-container{
+    width:92%;
+    max-width:420px;
+    margin:20px auto;
+}
+
+.dropdown{
+    background:#0A1F3F;
+    margin-bottom:16px;
+    border-radius:20px;
+    overflow:hidden;
+    border:1px solid rgba(0,207,255,.15);
+    box-shadow:0 10px 25px rgba(0,0,0,.35);
+}
+
+.dropdown-btn{
+    width:100%;
+    border:none;
+    background:transparent;
+    color:#fff;
+    padding:18px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    cursor:pointer;
+    font-size:18px;
+    font-weight:600;
+}
+
+.dropdown-btn span{
+    font-size:28px;
+    color:#4DEBFF;
+    transition:.3s;
+}
+
+.dropdown-content{
+    max-height:0;
+    overflow:hidden;
+    transition:max-height .35s ease;
+    padding:0 18px;
+}
+
+.dropdown.active .dropdown-content{
+    max-height:600px;
+    padding:18px;
+}
+
+.dropdown.active .dropdown-btn span{
+    transform:rotate(45deg);
+}
+
+.watch-btn{
+    width:100%;
+    margin-top:15px;
+    padding:14px;
+    border:none;
+    border-radius:12px;
+    background:linear-gradient(135deg,#003B6F,#00CFFF,#4DEBFF);
+    color:#fff;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.watch-btn:hover{
+    opacity:.9;
+}
+
+        {% comment %} 
+        end of ads contaner
+        {% endcomment %}
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background: #06152B;
+        }
+        
+
+        body {
+            display: flex;
+            flex-direction: column;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: #eee;
+            min-height: 100vh;
+            padding-bottom: 100px;
+        }
+
+        /* Gradient top bar, matching the clam page */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #06152B, #0A1F3F, #003B6F, #00CFFF, #4DEBFF);
+        }
+        .topbar img {
+            width: 2.6rem;
+            height: 2.6rem;
+        }
+        .topbar .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 18px;
+            color: #fff;
+        }
+
+        .page-header { text-align: center; margin: 20px 0 8px; }
+        .page-header h1 { font-size: 24px; color: #4DEBFF; }
+        .page-header p { font-size: 15px; color: #9fb3c8; }
+
+        .ad-card {
+            background: #0A1F3F;
+            padding: 32px 24px 28px;
+            border-radius: 24px;
+            text-align: center;
+            width: 92%;
+            max-width: 420px;
+            margin: 16px auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid rgba(0, 207, 255, 0.15);
+        }
+        .ad-card h2 { font-size: 22px; color: #4DEBFF; margin-bottom: 4px; }
+        .ad-card .sub-info { font-size: 14px; color: #9fb3c8; margin-bottom: 20px; }
+
+        .remaining-badge {
+            background: #003B6F;
+            padding: 10px 16px;
+            border-radius: 14px;
+            margin-bottom: 22px;
+            font-size: 15px;
+            color: #cfe8fb;
+            display: inline-block;
+            width: 100%;
+        }
+        .remaining-badge span { font-weight: 700; color: #4DEBFF; font-size: 20px; }
+
+        .btn-watch {
+            background: linear-gradient(135deg, #06152B, #0A1F3F, #003B6F, #00CFFF, #4DEBFF);
+            color: #fff;
+            border: none;
+            padding: 15px 20px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 50px;
+            width: 100%;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .btn-watch:hover:not(:disabled) { opacity: 0.9; }
+        .btn-watch:disabled { background: #37506b; cursor: not-allowed; opacity: 0.7; }
+
+        /* Progress-bar style countdown, matching the clam page */
+        .countdown-box {
+            margin-top: 22px;
+            background: #003B6F;
+            border-radius: 16px;
+            padding: 16px 14px;
+            border: 1px solid #00CFFF33;
+        }
+        .countdown-box p { color: #9fb3c8; font-size: 14px; margin-bottom: 10px; }
+        .progress {
+            height: 10px;
+            border-radius: 6px;
+            background: #06152B;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(135deg, #003B6F, #00CFFF, #4DEBFF);
+            transition: width 1s linear;
+        }
+        .countdown-number {
+            margin-top: 8px;
+            font-size: 32px;
+            font-weight: 700;
+            color: #4DEBFF;
+        }
+
+        .status-msg {
+            margin-top: 18px;
+            font-size: 15px;
+            color: #b0b8c8;
+            min-height: 44px;
+            padding: 6px 8px;
+            border-radius: 10px;
+            background: rgba(0,0,0,0.2);
+        }
+        .status-msg.success { color: #4ade80; }
+        .status-msg.error { color: #f87171; }
+        .status-msg.loading { color: #60a5fa; }
+        .hidden { display: none !important; }
+
+        footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 10px;
+    z-index: 1000;
+}
+    </style>
+</head>
+<body>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert
+                {% if message.tags == 'error' %}alert-danger
+                {% elif message.tags == 'success' %}alert-success
+                {% elif message.tags == 'warning' %}alert-warning
+                {% else %}alert-info{% endif %}
+                alert-dismissible fade show" role="alert"
+                style="position:fixed; top:20px; right:20px; z-index:9999; min-width:250px;">
+                <strong>{{ message }}</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="topbar">
+        <div class="brand">
+            <img src="{% static 'image/image.png' %}" class="rounded-circle">
+            Points Task
+        </div>
+        <span id="adRemainingTop" style="color:#fff; font-weight:600;">--</span>
+    </div>
+
+    <div class="page-header">
+        <h1>🎯 Watch & Earn</h1>
+        <p>Watch a full video ad to earn points instantly.</p>
+    </div>
+
+
+      <div class="ads-container">
+
+    <!-- Monetag -->
+    <div class="dropdown">
+        <button class="dropdown-btn">
+            💰 Monetag Ads
+            <span>+</span>
+        </button>
+
+        <div class="dropdown-content">
+
+            <div class="ad-card">
+        <div class="remaining-badge">
+            <i class="bi bi-calendar2-week me-2"></i>
+            Ads left today: <span id="adRemaining">--</span>
+        </div>
+
+        <button id="watchBtn" class="btn-watch">
+            <i class="bi bi-play-circle-fill"></i> Watch Video
+        </button>
+
+        <div id="countdownBox" class="countdown-box hidden">
+            <p><i class="bi bi-hourglass-split me-1"></i> Verifying your view</p>
+            <div class="progress">
+                <div class="progress-bar" id="progressBar" style="width:0%"></div>
+            </div>
+            <div class="countdown-number" id="countdownNumber">15</div>
+        </div>
+
+        <div id="statusMsg" class="status-msg">Click the button above to start.</div>
+    </div>
+
+        </div>
+    </div>
+
+    <!-- AdsGram -->
+    <div class="dropdown">
+        <button class="dropdown-btn">
+            📲 AdsGram (Telegram)
+            <span>+</span>
+        </button>
+
+        <div class="dropdown-content">
+
+             <div class="ad-card2">
+        <h2>📺 Watch & Earn</h2>
+        <p class="sub-info2">Watch a full video ad to earn points instantly.</p>
+
+        <div class="remaining-badge2">
+            <i class="bi bi-calendar2-week me-2"></i>
+            Ads left today: <span id="adRemaining2">--</span>
+        </div>
+
+        <button id="watchBtn2" class="btn-watch2">
+            <i class="bi bi-play-circle-fill"></i> Watch Video
+        </button>
+
+        <div id="countdownBox2" class="countdown-box2 hidden2">
+            <p><i class="bi bi-hourglass-split me-1"></i> Next ad available in</p>
+            <div class="progress2">
+                <div class="progress-bar2" id="progressBar2" style="width:0%"></div>
+            </div>
+            <div class="countdown-number2" id="countdownNumber2">60</div>
+        </div>
+
+        <div id="statusMsg2" class="status-msg2">Click the button above to start.</div>
+    </div>
+
+        </div>
+    </div>
+
+</div>
+
+
+    {% comment %} <div class="ad-card">
+        <div class="remaining-badge">
+            <i class="bi bi-calendar2-week me-2"></i>
+            Ads left today: <span id="adRemaining">--</span>
+        </div>
+
+        <button id="watchBtn" class="btn-watch">
+            <i class="bi bi-play-circle-fill"></i> Watch Video
+        </button>
+
+        <div id="countdownBox" class="countdown-box hidden">
+            <p><i class="bi bi-hourglass-split me-1"></i> Verifying your view</p>
+            <div class="progress">
+                <div class="progress-bar" id="progressBar" style="width:0%"></div>
+            </div>
+            <div class="countdown-number" id="countdownNumber">15</div>
+        </div>
+
+        <div id="statusMsg" class="status-msg">Click the button above to start.</div>
+    </div> {% endcomment %}
+   
+
+    {% include "foot/footer.html" %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+     {% comment %} for monetag {% endcomment %}
+    <script>
+    (function () {
+        'use strict';
+
+        const watchBtn = document.getElementById('watchBtn');
+        const statusMsg = document.getElementById('statusMsg');
+        const adRemaining = document.getElementById('adRemaining');
+        const adRemainingTop = document.getElementById('adRemainingTop');
+        const countdownBox = document.getElementById('countdownBox');
+        const countdownNumber = document.getElementById('countdownNumber');
+        const progressBar = document.getElementById('progressBar');
+
+        let telegramId = null;
+        let isAdPlaying = false;
+
+        function setStatus(text, type = '') {
+            statusMsg.textContent = text;
+            statusMsg.className = 'status-msg';
+            if (type) statusMsg.classList.add(type);
+        }
+
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+        const csrftoken = getCookie('csrftoken');
+
+        async function connectTelegramUser() {
+            if (!window.Telegram || !window.Telegram.WebApp) {
+                setStatus("❌ Please open this page inside Telegram.", "error");
+                return false;
+            }
+            const tg = window.Telegram.WebApp;
+            tg.ready();
+            const user = tg.initDataUnsafe?.user;
+            if (!user || !user.id) {
+                setStatus("❌ Telegram user information not found.", "error");
+                return false;
+            }
+            telegramId = String(user.id);
+            try {
+                const response = await fetch("{% url 'Task:save_telegram_id' %}", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "X-CSRFToken": csrftoken },
+                    body: JSON.stringify({ telegram_id: telegramId })
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || "Failed to save ID");
+                return true;
+            } catch (error) {
+                console.error(error);
+                setStatus("❌ Unable to connect Telegram account.", "error");
+                return false;
+            }
+        }
+
+        function resetButton() {
+            watchBtn.disabled = false;
+            watchBtn.innerHTML = '<i class="bi bi-play-circle-fill"></i> Watch Video';
+            isAdPlaying = false;
+        }
+
+        function runCountdown(seconds, onDone) {
+            countdownBox.classList.remove('hidden');
+            let remaining = seconds;
+            const total = seconds;
+            countdownNumber.textContent = remaining;
+            progressBar.style.width = '0%';
+            const interval = setInterval(() => {
+                remaining -= 1;
+                const pct = ((total - remaining) / total) * 100;
+                progressBar.style.width = pct + '%';
+                countdownNumber.textContent = remaining > 0 ? remaining : '✓';
+                if (remaining <= 0) {
+                    clearInterval(interval);
+                    countdownBox.classList.add('hidden');
+                    onDone();
+                }
+            }, 1000);
+        }
+
+        function pollForCompletion(ymid, attemptsLeft = 20) {
+            fetch(`{% url 'Task:check_ad_status' %}?ymid=${encodeURIComponent(ymid)}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'completed') {
+                        setStatus(`✅ Reward credited: +${data.reward} points!`, 'success');
+                        resetButton();
+                        return;
+                    }
+                    if (attemptsLeft <= 0) {
+                        setStatus('Still verifying — check back shortly.', 'loading');
+                        resetButton();
+                        return;
+                    }
+                    setTimeout(() => pollForCompletion(ymid, attemptsLeft - 1), 1500);
+                })
+                .catch(() => {
+                    setStatus('❌ Could not check reward status.', 'error');
+                    resetButton();
+                });
+        }
+
+        async function playAd(ymid, watchSeconds) {
+            setStatus('⏳ Loading advertisement...', 'loading');
+            console.log("Generated ymid:", ymid);
+            try {
+                await show_11372618({ ymid: ymid });
+                setStatus('✅ Ad completed! Verifying your reward...', 'success');
+                runCountdown(watchSeconds || 15, () => pollForCompletion(ymid));
+            } catch (error) {
+                console.error("Monetag error:", error);
+                setStatus('❌ Ad was skipped or unavailable. Try again.', 'error');
+                resetButton();
+            }
+        }
+
+        async function triggerAd() {
+            if (!telegramId) {
+                setStatus('❌ Telegram account not connected.', 'error');
+                return;
+            }
+            if (isAdPlaying || watchBtn.disabled) return;
+
+            isAdPlaying = true;
+            watchBtn.disabled = true;
+            watchBtn.innerHTML = '<i class="bi bi-arrow-repeat"></i> Loading...';
+            setStatus('🔄 Checking ad availability...', 'loading');
+
+            try {
+                const resp = await fetch("{% url 'Task:get_ad_token' %}", {
+                    method: 'GET',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const data = await resp.json();
+                if (!resp.ok || data.error) {
+                    setStatus('❌ ' + (data.message || 'Unable to load ad.'), 'error');
+                    if (data.remaining !== undefined) {
+                        adRemaining.textContent = data.remaining;
+                        adRemainingTop.textContent = data.remaining;
+                    }
+                    resetButton();
+                    return;
+                }
+                if (data.remaining !== undefined) {
+                    adRemaining.textContent = data.remaining;
+                    adRemainingTop.textContent = data.remaining;
+                }
+                await playAd(data.ymid, data.watch_seconds);
+            } catch (error) {
+                console.error(error);
+                setStatus('❌ Network error. Please try again.', 'error');
+                resetButton();
+            }
+        }
+
+        watchBtn.addEventListener('click', triggerAd);
+
+        async function startApp() {
+            watchBtn.disabled = true;
+            watchBtn.innerHTML = '<i class="bi bi-arrow-repeat"></i> Connecting...';
+            setStatus('🔄 Connecting Telegram account...', 'loading');
+
+            const connected = await connectTelegramUser();
+            if (!connected) {
+                watchBtn.disabled = true;
+                watchBtn.innerHTML = '❌ Telegram Required';
+                return;
+            }
+
+            watchBtn.disabled = false;
+            watchBtn.innerHTML = '<i class="bi bi-play-circle-fill"></i> Watch Video';
+            setStatus('Ready to watch an ad!', '');
+        }
+
+        document.addEventListener('DOMContentLoaded', startApp);
+    })();
+    </script>
+
+
+
+
+    {% comment %} //for  the  ads contaner {% endcomment %}
+
+    <script>
+    const dropdowns = document.querySelectorAll(".dropdown");
+
+    dropdowns.forEach(dropdown => {
+
+        dropdown.querySelector(".dropdown-btn").addEventListener("click", () => {
+
+        dropdowns.forEach(item => {
+            if(item !== dropdown){
+                item.classList.remove("active");
+            }
+        });
+
+        dropdown.classList.toggle("active");
+
+    });
+
+});
+</script>
+{% comment %} // end of the ads contaner {% endcomment %}
+
+
+{% comment %} 
+for adsgram
+{% endcomment %}
+<script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% comment %} omo {% endcomment %}
+{% comment %} <script>
+    let currentYMID = "";
+
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    // Telegram ID from your template
+    const USER_ID = "{{ request.user.telegram_id }}";
+
+    function initAdsGram() {
+
+        if (typeof window.Adsgram === "undefined") {
+            console.warn("⏳ AdsGram SDK not loaded...");
+            setTimeout(initAdsGram, 1000);
+            return;
+        }
+
+        const AdController = window.Adsgram.init({
+            blockId: "38323",
+            debug: false
+        });
+        AdController.addEventListener("onStart", () => {
+        console.log("START");
+        });
+
+    AdController.addEventListener("onReward", async () => {
+
+    const res = await fetch("/Task/adsgram-postback/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}"
+        },
+        body: JSON.stringify({
+            ymid: currentYMID,
+            reward: 10
+        })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+        alert("🎉 10 points added!");
+    } else {
+        alert(data.message);
+    }
+});
+
+    AdController.addEventListener("onComplete", () => {
+    console.log("COMPLETE");
+    });
+
+    AdController.addEventListener("onError", (e) => {
+    console.log("ERROR", e);
+    });
+
+
+
+
+        // Events
+        AdController.addEventListener("onStart", () => {
+            console.log("🟢 Ad started");
+        });
+
+        AdController.addEventListener("onReward", () => {
+            console.log("🎉 Reward event received");
+            alert("✅ Reward is being processed!");
+        });
+
+        AdController.addEventListener("onSkip", () => {
+            alert("⏭️ Ad skipped");
+        });
+
+        AdController.addEventListener("onBannerNotFound", () => {
+            alert("❌ No ads available");
+        });
+
+        AdController.addEventListener("onError", (err) => {
+            console.error(err);
+            alert("❌ " + (err.message || "Ad error"));
+        });
+
+        const button = document.getElementById("watchBtn2");
+
+        button.addEventListener("click", async function () {
+
+            button.disabled = true;
+            button.innerHTML = "Loading...";
+
+            try {
+
+                // 1. Ask Django for a YMID
+                const response = await fetch(
+                    `/Task/get-ad-token/?user_id=${USER_ID}`
+                );
+
+                const data = await response.json();
+
+                    currentYMID = data.ymid;
+
+                    await AdController.show({
+                     userId: currentYMID
+                });
+
+
+
+            } catch (err) {
+
+                console.error(err);
+                alert(err.message);
+
+            } finally {
+
+                button.disabled = false;
+                button.innerHTML = "Watch Video";
+
+            }
+
+        });
+
+        console.log("✅ AdsGram Ready");
+
+    }
+
+    initAdsGram();
+
+});
+</script> {% endcomment %}
+
+{% comment %} omo end {% endcomment %}
+
+
+{% comment %} clam down {% endcomment %}
+{% comment %} <script>
+    let currentYMID = "";
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        // Telegram ID from Django
+        const USER_ID = "{{ request.user.telegram_id }}";
+
+        function initAdsGram() {
+
+            // Wait for AdsGram SDK
+            if (typeof window.Adsgram === "undefined") {
+                console.warn("⏳ AdsGram SDK not loaded...");
+                setTimeout(initAdsGram, 1000);
+                return;
+            }
+
+            // Initialize AdsGram
+            const AdController = window.Adsgram.init({
+                blockId: "38323",
+                debug: false
+            });
+
+            // ==============================
+            // AD STARTED
+            // ==============================
+            AdController.addEventListener("onStart", () => {
+                console.log("🟢 AdsGram ad started");
+            });
+
+
+            // ==============================
+            // REWARD
+            // ==============================
+            AdController.addEventListener("onReward", async () => {
+
+                console.log("🎉 AdsGram reward received");
+
+                if (!currentYMID) {
+                    console.error("❌ YMID is missing");
+                    alert("❌ YMID is missing.");
+                    return;
+                }
+
+                try {
+
+                    const res = await fetch(
+                        "/Task/adsgram-postback/",
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type": "application/json",
+                                "X-CSRFToken": "{{ csrf_token }}"
+                            },
+
+                            body: JSON.stringify({
+                                ymid: currentYMID,
+                                reward: 10
+                            })
+                        }
+                    );
+
+                    console.log(
+                        "Reward server status:",
+                        res.status
+                    );
+
+                    if (!res.ok) {
+                        throw new Error(
+                            "Reward server returned " + res.status
+                        );
+                    }
+
+                    const data = await res.json();
+
+                    console.log(
+                        "Reward response:",
+                        data
+                    );
+
+                    if (data.success) {
+
+                        alert("🎉 10 points added!");
+
+                    } else {
+
+                        alert(
+                            data.message ||
+                            "❌ Reward could not be added."
+                        );
+                    }
+
+                } catch (error) {
+
+                    console.error(
+                        "❌ Reward request failed:",
+                        error
+                    );
+
+                    alert(
+                        "❌ Could not send reward to server."
+                    );
+                }
+
+            });
+
+
+            // ==============================
+            // AD COMPLETED
+            // ==============================
+            AdController.addEventListener("onComplete", () => {
+
+                console.log("🟢 AdsGram ad completed");
+
+            });
+
+
+            // ==============================
+            // AD SKIPPED
+            // ==============================
+            AdController.addEventListener("onSkip", () => {
+
+                console.log("⏭️ AdsGram ad skipped");
+
+            });
+
+
+            // ==============================
+            // NO AD
+            // ==============================
+            AdController.addEventListener(
+                "onBannerNotFound",
+                () => {
+
+                    console.log("❌ No AdsGram ad available");
+
+                    alert(
+                        "❌ No ads available right now."
+                    );
+                }
+            );
+
+
+            // ==============================
+            // ADSGRAM ERROR
+            // ==============================
+            AdController.addEventListener(
+                "onError",
+                (err) => {
+
+                    console.error(
+                        "❌ AdsGram error:",
+                        err
+                    );
+
+                    alert(
+                        "❌ " +
+                        (
+                            err.message ||
+                            "AdsGram error"
+                        )
+                    );
+                }
+            );
+
+
+            // ==============================
+            // WATCH BUTTON
+            // ==============================
+            const button =
+                document.getElementById("watchBtn2");
+
+
+            if (!button) {
+
+                console.error(
+                    "❌ watchBtn2 button not found"
+                );
+
+                return;
+            }
+
+
+            // ==============================
+            // BUTTON CLICK
+            // ==============================
+            button.addEventListener(
+                "click",
+                async function () {
+
+                    button.disabled = true;
+                    button.innerHTML = "Loading...";
+
+
+                    try {
+
+                        // --------------------------------
+                        // 1. Get YMID from Django
+                        // --------------------------------
+                        const response = await fetch(
+                            `/Task/get-ad-token/?user_id=${USER_ID}`
+                        );
+
+
+                        if (!response.ok) {
+
+                            throw new Error(
+                                "Could not get ad token."
+                            );
+                        }
+
+
+                        const data =
+                            await response.json();
+
+
+                        console.log(
+                            "Django ad-token response:",
+                            data
+                        );
+
+
+                        // --------------------------------
+                        // 2. Check YMID
+                        // --------------------------------
+                        if (!data.ymid) {
+
+                            throw new Error(
+                                data.message ||
+                                "YMID was not returned."
+                            );
+                        }
+
+
+                        // --------------------------------
+                        // 3. Save YMID
+                        // --------------------------------
+                        currentYMID = data.ymid;
+
+
+                        console.log(
+                            "Current YMID:",
+                            currentYMID
+                        );
+
+
+                        // --------------------------------
+                        // 4. Open AdsGram
+                        // --------------------------------
+                        await AdController.show({
+                            userId: currentYMID
+                        });
+
+
+                        console.log(
+                            "✅ AdsGram show() called"
+                        );
+
+
+                    } catch (err) {
+
+                        console.error(
+                            "❌ AdsGram error:",
+                            err
+                        );
+
+
+                        alert(
+                            "❌ " +
+                            (
+                                err.message ||
+                                "Ad could not open."
+                            )
+                        );
+
+
+                    } finally {
+
+                        button.disabled = false;
+                        button.innerHTML =
+                            "Watch Video";
+
+                    }
+
+                }
+            );
+
+
+            console.log(
+                "✅ AdsGram Ready"
+            );
+
+        }
+
+
+        // Start AdsGram
+        initAdsGram();
+
+    });
+</script> {% endcomment %}
+
+{% comment %} end of clam down {% endcomment %}
+
+
+
+let currentYMID = "";
+
+document.addEventListener("DOMContentLoaded", function () {
+    const USER_ID = "{{ request.user.telegram_id }}";
+
+    function initAdsGram() {
+        if (typeof window.Adsgram === "undefined") {
+            console.warn("⏳ AdsGram SDK not loaded...");
+            setTimeout(initAdsGram, 1000);
+            return;
+        }
+
+        const AdController = window.Adsgram.init({
+            blockId: "43946",
+            debug: false
+        });
+
+        // ------------------- Event listeners -------------------
+        AdController.addEventListener("onStart", () => {
+            console.log("🟢 AdsGram ad started");
+        });
+
+        // 🔥 The only place that reacts to reward – UI only
+        AdController.addEventListener("onReward", () => {
+            console.log("🎉 AdsGram reward received");
+            alert("✅ Reward added! Check your balance.");
+            // You can optionally call /ad-status/ here to refresh the displayed balance.
+        });
+
+        AdController.addEventListener("onComplete", () => {
+            console.log("🟢 AdsGram ad completed");
+        });
+
+        AdController.addEventListener("onSkip", () => {
+            console.log("⏭️ AdsGram ad skipped");
+        });
+
+        AdController.addEventListener("onBannerNotFound", () => {
+            console.log("❌ No AdsGram ad available");
+            alert("❌ No ads available right now.");
+        });
+
+        AdController.addEventListener("onError", (err) => {
+            console.error("❌ AdsGram error:", err);
+            alert("❌ " + (err.message || "AdsGram error"));
+        });
+
+        // ------------------- Watch button -------------------
+        const button = document.getElementById("watchBtn2");
+        if (!button) {
+            console.error("❌ watchBtn2 button not found");
+            return;
+        }
+
+        button.addEventListener("click", async function () {
+            button.disabled = true;
+            button.innerHTML = "Loading...";
+
+            try {
+                // 1. Get a signed token from your server
+                const response = await fetch(`/Task/get-ad-token/?user_id=${USER_ID}`);
+                if (!response.ok) {
+                    throw new Error("Could not get ad token.");
+                }
+                const data = await response.json();
+                console.log("Django token response:", data);
+
+                if (!data.ymid) {
+                    throw new Error(data.message || "YMID was not returned.");
+                }
+
+                currentYMID = data.ymid;
+
+                // 2. Show the ad
+                await AdController.show({ userId: currentYMID });
+                console.log("✅ AdsGram show() called");
+
+            } catch (err) {
+                console.error("❌ AdsGram error:", err);
+                alert("❌ " + (err.message || "Ad could not open."));
+            } finally {
+                button.disabled = false;
+                button.innerHTML = "Watch Video";
+            }
+        });
+
+        console.log("✅ AdsGram Ready");
+    }
+
+    initAdsGram();
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% comment %} trying {% endcomment %}
+{% comment %} <script>
+    (function () {
+        'use strict';
+
+        const COOLDOWN_SECONDS = 60;
+        const ADSGRAM_BLOCK_ID = "38323";
+
+        // DOM elements with "2" suffix
+        const watchBtn2 = document.getElementById('watchBtn2');
+        const statusMsg2 = document.getElementById('statusMsg2');
+        const adRemaining2 = document.getElementById('adRemaining2');
+        const adRemainingTop2 = document.getElementById('adRemainingTop2');
+        const countdownBox2 = document.getElementById('countdownBox2');
+        const countdownNumber2 = document.getElementById('countdownNumber2');
+        const progressBar2 = document.getElementById('progressBar2');
+
+        let countdownInterval2 = null;
+        let isAdPlaying2 = false;
+        let telegramId2 = null;
+        let AdController2 = null;
+
+        // Status helper
+        function setStatus2(text, type = '') {
+            if (statusMsg2) {
+                statusMsg2.textContent = text;
+                statusMsg2.className = 'status-msg2';
+                if (type) statusMsg2.classList.add(type);
+            }
+        }
+
+        // CSRF token
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+        const csrftoken = getCookie('csrftoken');
+
+        // Connect Telegram (exactly like Monetag)
+        async function connectTelegramUser2() {
+            if (!window.Telegram || !window.Telegram.WebApp) {
+                setStatus2("❌ Please open this page inside Telegram.", "error2");
+                return false;
+            }
+
+            const tg = window.Telegram.WebApp;
+            tg.ready();
+
+            const user = tg.initDataUnsafe?.user;
+            if (!user || !user.id) {
+                setStatus2("❌ Telegram user not found.", "error2");
+                return false;
+            }
+
+            telegramId2 = String(user.id);
+            console.log("✅ Telegram ID:", telegramId2);
+            return true;
+        }
+
+        // Initialize AdsGram
+        function initAdsGram2() {
+            return new Promise((resolve, reject) => {
+                function tryInit() {
+                    if (typeof window.Adsgram !== "undefined") {
+                        try {
+                            AdController2 = window.Adsgram.init({
+                                blockId: ADSGRAM_BLOCK_ID,
+                                debug: true
+                            });
+                            console.log("✅ AdsGram initialized");
+                            resolve(true);
+                        } catch (error) {
+                            reject(error);
+                        }
+                    } else {
+                        console.warn("⏳ AdsGram SDK not loaded. Retrying...");
+                        setStatus2("⏳ Loading ad service...", "loading2");
+                        setTimeout(tryInit, 1000);
+                    }
+                }
+                tryInit();
+            });
+        }
+
+        // Check remaining ads (no ?user_id)
+        async function checkRemaining2() {
+            try {
+                // Save Telegram ID first
+                if (telegramId2) {
+                    await fetch("{% url 'Task:save_telegram_id' %}", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrftoken
+                        },
+                        body: JSON.stringify({ telegram_id: telegramId2 })
+                    });
+                }
+
+                // Get token – NO ?user_id=
+                const resp = await fetch("{% url 'Task:get_ad_token' %}", {
+                    method: 'GET',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+
+                const data = await resp.json();
+
+                if (data.error) {
+                    adRemaining2.textContent = '0';
+                    adRemainingTop2.textContent = '0';
+                    watchBtn2.disabled = true;
+                    watchBtn2.innerHTML = '🚫 Limit Reached';
+                    setStatus2(data.message, 'error2');
+                } else {
+                    adRemaining2.textContent = data.remaining || 0;
+                    adRemainingTop2.textContent = data.remaining || 0;
+                    watchBtn2.disabled = false;
+                }
+            } catch (err) {
+                console.error('Check remaining error:', err);
+                adRemaining2.textContent = '?';
+                adRemainingTop2.textContent = '?';
+            }
+        }
+
+        // Countdown with progress bar
+        function startCountdown2() {
+            let remaining = COOLDOWN_SECONDS;
+            const total = COOLDOWN_SECONDS;
+
+            countdownBox2.classList.remove('hidden2');
+            countdownNumber2.textContent = remaining;
+            progressBar2.style.width = '0%';
+
+            watchBtn2.disabled = true;
+            watchBtn2.innerHTML = '<i class="bi bi-hourglass-split"></i> Wait...';
+
+            if (countdownInterval2) clearInterval(countdownInterval2);
+
+            countdownInterval2 = setInterval(() => {
+                remaining -= 1;
+                const pct = ((total - remaining) / total) * 100;
+                progressBar2.style.width = pct + '%';
+                countdownNumber2.textContent = remaining > 0 ? remaining : '✓';
+
+                if (remaining <= 0) {
+                    clearInterval(countdownInterval2);
+                    countdownInterval2 = null;
+                    countdownBox2.classList.add('hidden2');
+                    watchBtn2.disabled = false;
+                    watchBtn2.innerHTML = '<i class="bi bi-play-circle-fill"></i> Watch Video';
+                    setStatus2('Ready to watch another ad!', '');
+                    checkRemaining2();
+                }
+            }, 1000);
+        }
+
+        // Reset button
+        function resetButton2() {
+            watchBtn2.disabled = false;
+            watchBtn2.innerHTML = '<i class="bi bi-play-circle-fill"></i> Watch Video';
+            isAdPlaying2 = false;
+        }
+
+        // MAIN: Watch button click
+        watchBtn2.addEventListener('click', async () => {
+            if (isAdPlaying2 || watchBtn2.disabled) return;
+            if (!telegramId2) {
+                setStatus2('❌ Telegram not connected.', 'error2');
+                return;
+            }
+
+            isAdPlaying2 = true;
+            watchBtn2.disabled = true;
+            watchBtn2.innerHTML = '<i class="bi bi-arrow-repeat"></i> Loading...';
+            setStatus2('🔄 Loading ad...', 'loading2');
+
+            try {
+                // 1. Get token – EXACTLY like Monetag
+                const resp = await fetch("{% url 'Task:get_ad_token' %}", {
+                    method: 'GET',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+
+                // Log the response for debugging
+                const rawText = await resp.text();
+                console.log("Raw response:", rawText);
+
+                let data;
+                try {
+                    data = JSON.parse(rawText);
+                } catch (e) {
+                    console.error("Response is NOT JSON:", rawText);
+                    setStatus2('❌ Server returned invalid response.', 'error2');
+                    resetButton2();
+                    return;
+                }
+
+                if (data.error) {
+                    setStatus2('❌ ' + data.message, 'error2');
+                    adRemaining2.textContent = '0';
+                    adRemainingTop2.textContent = '0';
+                    watchBtn2.disabled = true;
+                    watchBtn2.innerHTML = '🚫 Limit Reached';
+                    isAdPlaying2 = false;
+                    return;
+                }
+
+                const ymid = data.ymid;
+                adRemaining2.textContent = data.remaining || 0;
+                adRemainingTop2.textContent = data.remaining || 0;
+
+                // 2. Show the ad
+                setStatus2('▶️ Watching ad...', 'loading2');
+                await AdController2.show({ ymid: ymid });
+
+                // 3. Claim reward
+                setStatus2('⏳ Verifying reward...', 'loading2');
+
+                const claimResp = await fetch("{% url 'Task:claim_adsgram_reward' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": csrftoken
+                    },
+                    body: JSON.stringify({ ymid: ymid })
+                });
+
+                const claimData = await claimResp.json();
+
+                if (claimData.error) {
+                    setStatus2('❌ ' + claimData.message, 'error2');
+                } else {
+                    setStatus2('✅ +' + (claimData.reward || 10) + ' coins earned!', 'success2');
+                    adRemaining2.textContent = claimData.remaining || 0;
+                    adRemainingTop2.textContent = claimData.remaining || 0;
+                    startCountdown2();
+                }
+
+            } catch (error) {
+                console.error('Ad error:', error);
+                setStatus2('❌ Ad was skipped or unavailable.', 'error2');
+                resetButton2();
+            } finally {
+                isAdPlaying2 = false;
+            }
+        });
+
+        // Start app
+        async function startApp2() {
+            setStatus2('🔄 Connecting Telegram...', 'loading2');
+
+            const connected = await connectTelegramUser2();
+            if (!connected) {
+                watchBtn2.disabled = true;
+                watchBtn2.innerHTML = '❌ Telegram Required';
+                return;
+            }
+
+            setStatus2('⏳ Loading ad service...', 'loading2');
+            try {
+                await initAdsGram2();
+            } catch (error) {
+                console.error('AdsGram init error:', error);
+                watchBtn2.disabled = true;
+                watchBtn2.innerHTML = '❌ Ad Service Unavailable';
+                setStatus2('❌ Ad service failed to load.', 'error2');
+                return;
+            }
+
+            await checkRemaining2();
+            setStatus2('Ready to watch an ad!', '');
+            watchBtn2.innerHTML = '<i class="bi bi-play-circle-fill"></i> Watch Video';
+        }
+
+        document.addEventListener('DOMContentLoaded', startApp2);
+    })();
+</script> {% endcomment %}
+{% comment %} end of trying {% endcomment %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ {% comment %} <script>
+    (function () {
+        'use strict';
+
+        // ------------------------------------------------------------
+        // CONFIGURATION
+        // ------------------------------------------------------------
+        const ADSGRAM_BLOCK_ID = "38323";
+        const COOLDOWN_SECONDS = 60;
+        const POLL_ATTEMPTS = 10;
+        const POLL_DELAY_MS = 3000;
+
+        // ------------------------------------------------------------
+        // DOM ELEMENTS
+        // ------------------------------------------------------------
+        const watchBtn2 = document.getElementById('watchBtn2');
+        const statusMsg2 = document.getElementById('statusMsg2');
+        const adRemaining2 = document.getElementById('adRemaining2');
+        const adRemainingTop2 = document.getElementById('adRemainingTop2');
+        const countdownBox2 = document.getElementById('countdownBox2');
+        const countdownNumber2 = document.getElementById('countdownNumber2');
+        const progressBar2 = document.getElementById('progressBar2');
+
+        // ------------------------------------------------------------
+        // VARIABLES
+        // ------------------------------------------------------------
+        let countdownInterval2 = null;
+        let isAdPlaying2 = false;
+        let telegramId2 = null;
+        let telegramReady2 = false;
+        let AdController2 = null;
+        let currentYmid2 = null;
+
+        // ------------------------------------------------------------
+        // STATUS MESSAGE
+        // ------------------------------------------------------------
+        function setStatus2(text, type = '') {
+            statusMsg2.textContent = text;
+            statusMsg2.className = 'status-msg2';
+            if (type) statusMsg2.classList.add(type);
+        }
+
+        // ------------------------------------------------------------
+        // GET TELEGRAM ID AND SAVE IT TO DJANGO USER
+        // ------------------------------------------------------------
+        async function connectTelegramUser2() {
+            if (!window.Telegram || !window.Telegram.WebApp) {
+                console.warn("Telegram WebApp is not available.");
+                setStatus2("❌ Please open this page inside Telegram.", "error2");
+                return false;
+            }
+
+            const tg = window.Telegram.WebApp;
+            tg.ready();
+
+            const telegramUser = tg.initDataUnsafe?.user;
+            if (!telegramUser || !telegramUser.id) {
+                console.warn("Telegram user information was not found.");
+                setStatus2("❌ Telegram user information was not found.", "error2");
+                return false;
+            }
+
+            telegramId2 = String(telegramUser.id);
+            console.log("Telegram ID:", telegramId2);
+
+            try {
+                const response = await fetch("{% url 'Task:save_telegram_id' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": "{{ csrf_token }}"
+                    },
+                    body: JSON.stringify({ telegram_id: telegramId2 })
+                });
+
+                const raw = await response.text();
+                console.log("SAVE TELEGRAM STATUS:", response.status);
+
+                let data;
+                try {
+                    data = JSON.parse(raw);
+                } catch {
+                    throw new Error("Server returned invalid response: " + raw.substring(0, 300));
+                }
+
+                if (!response.ok) {
+                    throw new Error(data.error || "Unable to save Telegram ID");
+                }
+
+                telegramReady2 = true;
+                console.log("Telegram ID connected successfully:", data);
+                return true;
+
+            } catch (error) {
+                console.error("Telegram ID save error:", error);
+                setStatus2("❌ Unable to connect Telegram account.", "error2");
+                return false;
+            }
+        }
+
+        // ------------------------------------------------------------
+        // CREATE GET AD TOKEN URL
+        // ------------------------------------------------------------
+        function getTokenUrl2() {
+            const base = '{% url "Task:get_ad_token" %}';
+            return `${base}?user_id=` + encodeURIComponent(telegramId2);
+        }
+
+        // ------------------------------------------------------------
+        // CREATE AD STATUS URL (used to poll for postback confirmation)
+        // ------------------------------------------------------------
+        function getStatusUrl2(ymid) {
+            const base = '{% url "Task:ad_status" %}';
+            return `${base}?ymid=` + encodeURIComponent(ymid);
+        }
+
+        // ------------------------------------------------------------
+        // INITIALIZE ADSGRAM
+        // ------------------------------------------------------------
+        function initializeAdsGram2() {
+    try {
+        if (typeof window.Adsgram !== "undefined") {
+
+            AdController2 = window.Adsgram.init({
+                blockId: "38323",
+                debug: false
+            });
+
+            console.log("✅ AdsGram initialized:", AdController2);
+
+            // ADSGRAM EVENTS
+            AdController2.addEventListener("onStart", function () {
+                console.log("🟢 AdsGram onStart");
+            });
+
+            AdController2.addEventListener("onReward", function () {
+                console.log("🎉 ADSGRAM REWARD RECEIVED!");
+            });
+
+            AdController2.addEventListener("onSkip", function () {
+                console.log("⚠️ AdsGram ad skipped");
+            });
+
+            AdController2.addEventListener("onError", function (error) {
+                console.error("❌ AdsGram error:", error);
+            });
+
+            AdController2.addEventListener("onBannerNotFound", function () {
+                console.error("❌ AdsGram: no ad available");
+            });
+
+            return true;
+
+        } else {
+            console.warn("[Adsgram] SDK not loaded.");
+            setStatus2("⚠️ Ad service unavailable.", "error2");
+            return false;
+        }
+
+    } catch (error) {
+        console.error("[Adsgram] Initialization error:", error);
+        setStatus2("⚠️ Ad service error.", "error2");
+        return false;
+    }
+}
+
+        // ------------------------------------------------------------
+        // COOLDOWN COUNTDOWN (with progress bar)
+        // ------------------------------------------------------------
+        function startCountdown2() {
+            if (countdownInterval2) {
+                clearInterval(countdownInterval2);
+                countdownInterval2 = null;
+            }
+
+            let remaining = COOLDOWN_SECONDS;
+            const total = COOLDOWN_SECONDS;
+
+            countdownBox2.classList.remove('hidden2');
+            countdownNumber2.textContent = remaining;
+            progressBar2.style.width = '0%';
+
+            watchBtn2.disabled = true;
+            watchBtn2.innerHTML = '<i class="bi bi-hourglass-split"></i> Wait...';
+
+            countdownInterval2 = setInterval(() => {
+                remaining -= 1;
+                const pct = ((total - remaining) / total) * 100;
+                progressBar2.style.width = pct + '%';
+                countdownNumber2.textContent = remaining > 0 ? remaining : '✓';
+
+                if (remaining <= 0) {
+                    clearInterval(countdownInterval2);
+                    countdownInterval2 = null;
+                    countdownBox2.classList.add('hidden2');
+                    watchBtn2.disabled = false;
+                    watchBtn2.innerHTML = '<i class="bi bi-play-circle-fill"></i> Watch Video';
+                    setStatus2('Ready to watch another ad!', '');
+                }
+            }, 1000);
+        }
+
+        // ------------------------------------------------------------
+        // RESET BUTTON
+        // ------------------------------------------------------------
+        function resetButton2() {
+            watchBtn2.disabled = false;
+            watchBtn2.innerHTML = '<i class="bi bi-play-circle-fill"></i> Watch Video';
+            isAdPlaying2 = false;
+        }
+
+        // ------------------------------------------------------------
+        // POLL SERVER TO CONFIRM ADSGRAM'S POSTBACK ARRIVED
+        // (Adsgram's server calls adsgram_postback on the backend;
+        // this just checks whether that has happened yet — it does
+        // NOT grant the reward itself)
+        // ------------------------------------------------------------
+        async function pollForCompletion2(ymid) {
+            for (let i = 0; i < POLL_ATTEMPTS; i++) {
+                try {
+                    const resp = await fetch(getStatusUrl2(ymid), {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+                    const data = await resp.json();
+
+                    if (data.status === 'completed') {
+                        setStatus2(`✅ Reward credited! +${data.reward} points`, 'success2');
+                        startCountdown2();
+                        return;
+                    }
+
+                    if (data.status === 'failed' || data.error) {
+                        setStatus2('❌ Reward could not be confirmed. Try again.', 'error2');
+                        resetButton2();
+                        return;
+                    }
+
+                } catch (err) {
+                    console.warn('[App2] Status poll error:', err);
+                }
+
+                await new Promise(res => setTimeout(res, POLL_DELAY_MS));
+            }
+
+            // Gave up waiting — postback may just be delayed
+            setStatus2('⚠️ Still waiting on confirmation — check back shortly.', 'error2');
+            resetButton2();
+        }
+
+        // ------------------------------------------------------------
+        // PLAY ADSGRAM AD
+        // ------------------------------------------------------------
+  async function playAd2() {
+
+        if (!AdController2) {
+        setStatus2(
+            '❌ Ad service not initialized.',
+            'error2'
+        );
+        resetButton2();
+        return;
+        }
+
+        setStatus2(
+        '⏳ Loading advertisement...',
+        'loading2'
+        );
+
+        let rewardReceived = false;
+
+        const rewardHandler = async () => {
+
+        if (rewardReceived) {
+            return;
+        }
+
+        rewardReceived = true;
+
+        console.log(
+            "[AdsGram] onReward received for:",
+            currentYmid2
+        );
+
+        try {
+
+            const response = await fetch(
+                "{% url 'Task:claim_adsgram_reward' %}",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": "{{ csrf_token }}"
+                    },
+                    body: JSON.stringify({
+                        ymid: currentYmid2
+                    })
+                }
+            );
+
+            const data = await response.json();
+
+            console.log(
+                "[AdsGram] Reward response:",
+                data
+            );
+
+            if (!response.ok || data.error) {
+
+                setStatus2(
+                    "❌ " + (
+                        data.message ||
+                        "Reward could not be credited."
+                    ),
+                    "error2"
+                );
+
+                resetButton2();
+                return;
+            }
+
+            if (data.remaining !== undefined) {
+                adRemaining2.textContent = data.remaining;
+                adRemainingTop2.textContent = data.remaining;
+            }
+
+            setStatus2(
+                `✅ Reward credited! +${data.reward} points`,
+                "success2"
+            );
+
+            startCountdown2();
+
+        } catch (error) {
+
+            console.error(
+                "[AdsGram] Reward request error:",
+                error
+            );
+
+            setStatus2(
+                "❌ Could not contact the server.",
+                "error2"
+            );
+
+            resetButton2();
+
+        } finally {
+
+            AdController2.removeEventListener(
+                "onReward",
+                rewardHandler
+            );
+        }
+    };
+
+    AdController2.addEventListener(
+        "onReward",
+        rewardHandler
+    );
+
+    try {
+
+        const result = await AdController2.show();
+
+        console.log(
+            "[AdsGram] show() result:",
+            result
+        );
+
+    } catch (error) {
+
+        console.error(
+            "[AdsGram] show() error:",
+            error
+        );
+
+        AdController2.removeEventListener(
+            "onReward",
+            rewardHandler
+        );
+
+        setStatus2(
+            "❌ Ad was skipped or unavailable.",
+            "error2"
+        );
+
+        resetButton2();
+    }
+ }
+
+        // ------------------------------------------------------------
+        // WATCH VIDEO BUTTON
+        // ------------------------------------------------------------
+        async function triggerAd2() {
+            if (!telegramReady2 || !telegramId2) {
+                setStatus2('❌ Telegram account is not connected yet.', 'error2');
+                return;
+            }
+
+            if (isAdPlaying2 || watchBtn2.disabled) return;
+
+            isAdPlaying2 = true;
+            watchBtn2.disabled = true;
+            watchBtn2.innerHTML = '<i class="bi bi-arrow-repeat"></i> Loading...';
+            setStatus2('🔄 Checking ad availability...', 'loading2');
+
+            try {
+                const resp = await fetch(getTokenUrl2(), {
+                    method: 'GET',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+
+                const raw = await resp.text();
+                console.log("TOKEN STATUS:", resp.status);
+
+                let data;
+                try {
+                    data = JSON.parse(raw);
+                } catch {
+                    throw new Error(`Server returned ${resp.status}: ` + raw.substring(0, 300));
+                }
+
+                if (!resp.ok || data.error) {
+                    setStatus2('❌ ' + (data.message || 'Unable to load ad.'), 'error2');
+                    resetButton2();
+                    if (data.remaining !== undefined) {
+                        adRemaining2.textContent = data.remaining;
+                        adRemainingTop2.textContent = data.remaining;
+                    }
+                    return;
+                }
+
+                if (data.remaining !== undefined) {
+                    adRemaining2.textContent = data.remaining;
+                    adRemainingTop2.textContent = data.remaining;
+                }
+
+                currentYmid2 = data.ymid;
+                console.log("Ad token created:", currentYmid2);
+
+                await playAd2();
+
+            } catch (error) {
+                console.error('Trigger ad error:', error);
+                setStatus2('❌ Network error. Please try again.', 'error2');
+                resetButton2();
+            }
+        }
+
+        // ------------------------------------------------------------
+        // WATCH BUTTON EVENT
+        // ------------------------------------------------------------
+        watchBtn2.addEventListener('click', triggerAd2);
+
+        // ------------------------------------------------------------
+        // PAGE STARTUP
+        // ------------------------------------------------------------
+        async function startApp2() {
+            console.log("[App2] Starting...");
+
+            watchBtn2.disabled = true;
+            watchBtn2.innerHTML = '<i class="bi bi-arrow-repeat"></i> Connecting...';
+            setStatus2('🔄 Connecting Telegram account...', 'loading2');
+
+            const connected = await connectTelegramUser2();
+            if (!connected) {
+                watchBtn2.disabled = true;
+                watchBtn2.innerHTML = '❌ Telegram Required';
+                return;
+            }
+
+            const adsgramReady = initializeAdsGram2();
+            if (!adsgramReady) {
+                watchBtn2.disabled = true;
+                watchBtn2.innerHTML = '❌ Ad Service Unavailable';
+                return;
+            }
+
+            watchBtn2.disabled = false;
+            watchBtn2.innerHTML = '<i class="bi bi-play-circle-fill"></i> Watch Video';
+            setStatus2('Ready to watch an ad!', '');
+
+            console.log("[App2] Ready.");
+        }
+
+        document.addEventListener('DOMContentLoaded', startApp2);
+    })();
+</script> 
+
+
+ {% endcomment %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  {% comment %} <script>
+    const dropdowns = document.querySelectorAll(".dropdown");
+
+    dropdowns.forEach(dropdown => {
+
+        dropdown.querySelector(".dropdown-btn").addEventListener("click", () => {
+
+        dropdowns.forEach(item => {
+            if(item !== dropdown){
+                item.classList.remove("active");
+            }
+        });
+
+        dropdown.classList.toggle("active");
+
+    });
+
+}); {% endcomment %}
+</script>
+</body>
+</body>
+</html>

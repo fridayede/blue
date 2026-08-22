@@ -1,0 +1,27 @@
+ <div>
+        <footer>
+            <ul class="nav nav-pills nav-fill gap-2 p-1 small  rounded-5 shadow-sm" id="pillNav2"
+                style="background:  linear-gradient(135deg, #06152B, #0A1F3F, #003B6F, #00CFFF, #4DEBFF);"
+                role="tablist"
+                style="--bs-nav-link-color: var(--bs-white); --bs-nav-pills-link-active-color: var(--bs-primary); --bs-nav-pills-link-active-bg: var(--bs-white);">
+                <li class="nav-item" role="presentation">
+                    <a href="{% url 'Home:clam' %}" class="nav-link rounded-5 {% if request.path == '/Home/clam/' %}active{% endif %}"><i class="bi bi-house-door"></i> </a></li>
+               
+
+                <li class="nav-item" role="presentation">
+                    <a href="{% url 'Task:hometask' %}"    class="nav-link rounded-5 {% if request.path == '/Task/hometask/' %}active{% endif %}"><i class="bi bi-card-checklist"></i></a></li>
+
+
+                <li class="nav-item" role="presentation">
+                    <a href="{% url 'Swap:swappage' %}"    class="nav-link rounded-5 {% if request.path == '/Swap/swappage/' %}active{% endif %}"><i class="bi bi-bluetooth"></i></a></li>
+                    
+                </li>
+                <li class="nav-item" role="presentation">
+                    {% comment %} <button class="nav-link rounded-5" id="contact-tab2" data-bs-toggle="tab" type="button" role="tab" {% endcomment %}
+                    <a href="{% url 'Withdrawblue:withdrawblue' %}"    class="nav-link rounded-5 {% if request.path == '/withdrawblue/withdrawblue/' %}active{% endif %}"><i class="bi bi-wallet2"></i></a></li>
+                    
+                </li>
+            </ul>
+        </footer>
+    </div>
+ 
