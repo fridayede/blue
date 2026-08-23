@@ -33,7 +33,7 @@ class MainConfig(AppConfig):
                     print(f"❌ Ping failed: {e}")
                 
                 # Wait 2 minutes (200 seconds) before next ping
-                time.sleep(200)
+                time.sleep(250)
         
         # Start the background thread
         # 'daemon=True' means it stops when Django stops
