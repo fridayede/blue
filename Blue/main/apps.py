@@ -24,6 +24,7 @@ class MainConfig(AppConfig):
                 try:
                     # Ping your Render site
                     requests.get(
+                        "https://blue-25bdc.containers.snapdeploy.appAccount/login/",
                         "https://blue-25bdc.containers.snapdeploy.app/Account/login/",
                         # "https://blue-a7ca.onrender.com/Account/login/",
                         timeout=30
