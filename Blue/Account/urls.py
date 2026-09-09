@@ -11,4 +11,5 @@ urlpatterns = [
     path('resetPassword/',views.resetPassword, name='resetPassword'),
     path('newPassword/',views.newPassword,name='newPassword'),
     path('logout/',views.logout,name='logout'),
+    path('login-health-check/', views.login_health_check, name='login_health_check'),
 ]

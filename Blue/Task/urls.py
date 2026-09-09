@@ -33,6 +33,8 @@ path(
         views.claim_adsgram_reward,
         name="claim_adsgram_reward",
     ),
+
+    path("ads-health-check/", views.ads_health_check, name="ads_health_check"),
     
 ]
 # path('details/<int:product_id>/',views.product_detail, name="product_detail")

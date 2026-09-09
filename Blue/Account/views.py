@@ -2,6 +2,8 @@ import email
 
 
 from datetime import datetime, timedelta 
+from django.http import JsonResponse
+from django.http import JsonResponse
 from django.utils import timezone
 from django.contrib import messages
 from django.contrib.auth import authenticate
@@ -384,3 +386,7 @@ from django.contrib.auth import logout
 
 def logout(request):
     return redirect("Account:login")  # change "login" to your login URL name
+
+
+def login_health_check(request):
+    return JsonResponse({"status": "ok", "message": "Login system is healthy."})

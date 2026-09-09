@@ -699,3 +699,12 @@ def complect(request):
     return render(request, "complect.html", {
         "completed_tasks": completed_tasks
     })
+
+
+
+
+
+
+
+def ads_health_check(request):
+    return JsonResponse({"status": "ok", "message": "Ads system is healthy."})

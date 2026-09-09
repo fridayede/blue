@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from django.shortcuts import render,redirect
 from  Swap.models import Swap
 from django.contrib import messages
@@ -79,3 +80,8 @@ def withdraw(request):
     }
 
     return render(request, 'withdraw.html', context)
+
+
+
+def withdraw_health_check(request):
+    return JsonResponse({"status": "ok", "message": "Withdraw system is healthy."})
