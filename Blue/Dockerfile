@@ -37,4 +37,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Fixed the $PORT expansion here:
-CMD gunicorn Blue.wsgi:application --bind 0.0.0.0:$PORT
+CMD gunicorn Blue.wsgi:application --bind 0.0.0.0:$PORT# Build trigger
