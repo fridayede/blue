@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-0fuu##!k$o^9e%07f)0(6e8wz#7so86hy9uwvo)lx=-u3(j-fr
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = True
+ DEBUG = True
 
 
 
@@ -40,7 +40,7 @@ ALLOWED_HOSTS = ['blue-ypsn3bof.b4a.run', 'localhost', '127.0.0.1']
 
 
 # for hosting
-DEBUG = False
+#DEBUG = False
 
 # for development/local testing/production
 # ALLOWED_HOSTS = []
