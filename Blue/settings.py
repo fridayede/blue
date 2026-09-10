@@ -26,9 +26,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = True
-ALLOWED_HOSTS = ['YOUR-BACK4APP-DOMAIN.back4app.io', 'localhost', '127.0.0.1']
 
-CSRF_TRUSTED_ORIGINS = ['https://YOUR-BACK4APP-DOMAIN.back4app.io']
+
+
+
+ALLOWED_HOSTS = ['blue-ypsn3bof.b4a.run', 'localhost', '127.0.0.1']
+
+CSRF_TRUSTED_ORIGINS = ['https://blue-ypsn3bof.b4a.run']
 
 # ALLOWED_HOSTS = ['blue-25bdc.containers.snapdeploy.app', 'localhost', '127.0.0.1']
 
