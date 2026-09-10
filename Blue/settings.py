@@ -30,7 +30,8 @@ DEBUG = False
 
 
 
-# CSRF_TRUSTED_ORIGINS = ['https://blue-ypsn3bof.b4a.run']
+CSRF_TRUSTED_ORIGINS = ['https://blue-ypsn3bof.b4a.run']
+ALLOWED_HOSTS = ['*']
 
 # ALLOWED_HOSTS = ['blue-ypsn3bof.b4a.run', 'localhost', '127.0.0.1']
 
