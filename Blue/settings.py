@@ -30,9 +30,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 
-ALLOWED_HOSTS = ['blue-ypsn3bof.b4a.run', 'localhost', '127.0.0.1']
-
 CSRF_TRUSTED_ORIGINS = ['https://blue-ypsn3bof.b4a.run']
+
+ALLOWED_HOSTS = ['blue-ypsn3bof.b4a.run', 'localhost', '127.0.0.1']
 
 # ALLOWED_HOSTS = ['blue-25bdc.containers.snapdeploy.app', 'localhost', '127.0.0.1']
 
