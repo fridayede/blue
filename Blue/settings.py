@@ -61,6 +61,23 @@ ALLOWED_HOSTS = ['*']
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 
+# Tell Django it's behind an HTTPS proxy
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Trust your Back4App domain for CSRF
+CSRF_TRUSTED_ORIGINS = ['https://blue-ypsn3bof.b4a.run']
+
+# Only send cookies over HTTPS
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+
+# Keep DEBUG off in production
+DEBUG = False
+
+# Allow all hosts (Back4App's internal checks use changing hostnames)
+ALLOWED_HOSTS = ['*']
+
+
 
 # Application definition
 
