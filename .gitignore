@@ -1,4 +1,8 @@
 .venv/
 Blue/settings.py.bak
 *.pyc
+<<<<<<< HEAD
 Dockerfile
+=======
+Dockerfile
+>>>>>>> d9ae37af426dac416d7f66842fc9122787e7d68e
