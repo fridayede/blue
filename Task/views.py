@@ -363,6 +363,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from .models import DailyAdCount, Adsview, UserWallet
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 
@@ -431,42 +434,66 @@ def requests_ad_token(request):
 # ============================================================
 # 2. ADSGRAM REWARD CALLBACK
 # ============================================================
+
 @csrf_exempt
 def adsgram_postback(request):
     if request.method != "GET":
         return JsonResponse({"error": "GET required"}, status=405)
 
-    ymid = request.GET.get("userId")      # or "ymid"? check AdsGram docs
-    reward = request.GET.get("reward", 10)
-    # Optional: validate signature if AdsGram sends one
+    telegram_id = request.GET.get("userId")
 
-    if not ymid:
+    if not telegram_id:
         return JsonResponse({"error": "Missing userId"}, status=400)
 
     try:
-        with transaction.atomic():
-            ad = Adsview.objects.select_for_update().get(
-                ymid=ymid,
-                status="pending"
-            )
-            # Optional: check TTL / expiry
-            # if timezone.now() > ad.created_at + timedelta(seconds=TOKEN_TTL_SECONDS):
-            #     ad.status = "expired"; ad.save(); return JsonResponse({"error": "Expired"})
+        telegram_id = int(telegram_id)
+    except ValueError:
+        return JsonResponse({"error": "Invalid userId"}, status=400)
 
+    try:
+        with transaction.atomic():
+
+            # Find the Django user using Telegram ID
+            user = User.objects.select_for_update().get(
+                telegram_id=telegram_id
+            )
+
+            # Find this user's oldest pending ad
+            ad = Adsview.objects.select_for_update().filter(
+                user=user,
+                status="pending"
+            ).order_by("created_at").first()
+
+            if not ad:
+                return JsonResponse(
+                    {"error": "No pending ad found"},
+                    status=404
+                )
+
+            # Mark ad as completed
             ad.status = "completed"
-            ad.reward = reward
+            ad.reward = ADS_REWARD
             ad.completed_at = timezone.now()
             ad.save()
 
-            user = ad.user
-            wallet, _ = UserWallet.objects.get_or_create(user=user)
-            wallet.balance += int(reward)
+            # Add reward to wallet
+            wallet, _ = UserWallet.objects.get_or_create(
+                user=user
+            )
+
+            wallet.balance += ADS_REWARD
             wallet.save()
 
-            return JsonResponse({"success": True})
-    except Adsview.DoesNotExist:
-        return JsonResponse({"error": "Invalid ymid"}, status=404)
+            return JsonResponse({
+                "success": True,
+                "reward": ADS_REWARD
+            })
 
+    except User.DoesNotExist:
+        return JsonResponse(
+            {"error": "Telegram user not found"},
+            status=404
+        )
 
 
 
