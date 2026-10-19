@@ -25,8 +25,8 @@ urlpatterns = [
 
 
 # for adsgram
-    path('get-ad-token/', views.requests_ad_token, name='get_ad_token'),
-    path('adsgram-postback/', views.adsgram_postback, name='adsgram_postback'),
+    path('request_ad_slot/', views.request_ad_slot, name='request_ad_slot'),
+    path('tads_postback/', views.tads_postback, name='tads_postback'),
     path('ad-status/', views.ad_status, name='ad_status'),
 path(
         "claim-adsgram-reward/",

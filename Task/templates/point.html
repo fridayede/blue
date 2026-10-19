@@ -876,38 +876,15 @@ document.addEventListener("DOMContentLoaded", function () {
     // --- CONFIGURATION ---
 const TADS_WIDGET_ID = 12764; // Your TADS Widget ID
 const COOLDOWN_SECONDS = 60;
-
-// --- DOM ELEMENTS (same as before) ---
-// ...
-
 // --- VARIABLES ---
-// let AdController = null; // REMOVE THIS
-// let currentYmid = null; // REMOVE THIS
-
-// --- INITIALIZE TADS ---
-function initializeTads() {
-    try {
-        if (typeof window.tads !== 'undefined') {
-            window.tads.init(); // Initialize the SDK
-            console.log("[TADS] Initialized.");
-            return true;
-        } else {
-            console.warn("[TADS] SDK not loaded.");
-            setStatus("⚠️ Ad service unavailable.", "error");
-            return false;
-        }
-    } catch (error) {
-        console.error("[TADS] Init error:", error);
-        setStatus("⚠️ Ad service error.", "error");
-        return false;
-    }
-}
+let currentAdViewId = null;   // ← NEW: track which ad slot we're on
 
 // --- SHOW TADS AD ---
 function showTadsAd() {
     if (typeof window.tads === 'undefined' || typeof window.tads.showWidget !== 'function') {
         setStatus('❌ Ad service not ready.', 'error');
         resetButton();
+        isAdPlaying = false;
         return;
     }
 
@@ -916,48 +893,62 @@ function showTadsAd() {
     try {
         window.tads.showWidget({
             id: TADS_WIDGET_ID,
-            onShowReward: async function(result) {
-                // This runs ONLY after a full ad view
+            onShowReward: async function (result) {
                 setStatus('✅ Ad completed! Granting reward...', 'success');
-
-                // Call your Django backend to securely credit the user
-                await grantRewardOnServer();
-
-                startCountdown();
+                const ok = await grantRewardOnServer();
+                if (ok) {
+                    startCountdown();
+                } else {
+                    resetButton();
+                }
+                isAdPlaying = false;
             },
-            onAdsNotFound: function() {
+            onAdsNotFound: function () {
                 setStatus('❌ No ad available. Try again later.', 'error');
                 resetButton();
+                isAdPlaying = false;
             }
         });
     } catch (error) {
         console.error('[TADS] Show error:', error);
         setStatus('❌ Failed to show ad.', 'error');
         resetButton();
+        isAdPlaying = false;
     }
 }
 
-// --- DJANGO BACKEND CALL (replaces token logic) ---
+// --- DJANGO BACKEND CALL ---
 async function grantRewardOnServer() {
     try {
-        const response = await fetch("{% url 'Task:grant_reward' %}", { // Create this view
+        const response = await fetch("{% url 'Task:tads_postback' %}", {   // ← FIXED URL
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRFToken": "{{ csrf_token }}"
             },
             body: JSON.stringify({
-                telegram_id: telegramId
-                // You might want to send a nonce or the result object for verification
+                telegram_id: telegramId,
+                ad_view_id: currentAdViewId   // ← NEW: precise matching
             })
         });
-        // Handle response, update UI, etc.
+
+        const data = await response.json();
+
+        if (data.success) {
+            setStatus(`✅ Earned ${data.reward} points!`, 'success');
+            return true;
+        } else {
+            setStatus(`❌ ${data.error || 'Reward failed'}`, 'error');
+            return false;
+        }
     } catch (error) {
         console.error("Reward grant failed:", error);
+        setStatus('❌ Network error crediting reward.', 'error');
+        return false;
     }
 }
 
-// --- TRIGGER AD (simplified) ---
+// --- TRIGGER AD (now calls request_ad_slot FIRST) ---
 async function triggerAd() {
     if (!telegramReady || !telegramId) {
         setStatus('❌ Telegram account not connected.', 'error');
@@ -969,24 +960,34 @@ async function triggerAd() {
     watchBtn.disabled = true;
     watchBtn.innerHTML = '<i class="bi bi-arrow-repeat"></i> Loading...';
 
-    // Call TADS directly, no token pre-fetch
-    showTadsAd();
-}
+    // Step 1: create pending ad slot on backend
+    try {
+        const resp = await fetch("{% url 'Task:request_ad_slot' %}", {
+            method: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const data = await resp.json();
 
-// --- STARTUP ---
-async function startApp() {
-    // Connect Telegram...
-    const connected = await connectTelegramUser();
-    if (!connected) { /* ... */ return; }
+        if (!resp.ok || data.error) {
+            setStatus('❌ ' + (data.message || 'Unable to start ad.'), 'error');
+            if (data.remaining !== undefined) adRemaining.textContent = data.remaining;
+            resetButton();
+            isAdPlaying = false;
+            return;
+        }
 
-    // Initialize TADS
-    const tadsReady = initializeTads();
-    if (!tadsReady) { /* ... */ return; }
+        currentAdViewId = data.ad_view_id;
+        if (data.remaining !== undefined) adRemaining.textContent = data.remaining;
 
-    // Ready
-    watchBtn.disabled = false;
-    watchBtn.innerHTML = '<i class="bi bi-play-circle-fill"></i> Watch Video';
-    setStatus('Ready to watch an ad!', '');
+        // Step 2: now show the ad
+        showTadsAd();
+
+    } catch (err) {
+        console.error('Request slot error:', err);
+        setStatus('❌ Network error. Try again.', 'error');
+        resetButton();
+        isAdPlaying = false;
+    }
 }
 </script>
 
