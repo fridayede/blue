@@ -873,124 +873,310 @@ document.addEventListener("DOMContentLoaded", function () {
     initAdsGram();
 });
 </script> {% endcomment %}
-
 <script>
-    // --- CONFIGURATION ---
-const TADS_WIDGET_ID = 12764; // Your TADS Widget ID
-const COOLDOWN_SECONDS = 60;
-// --- VARIABLES ---
-let currentAdViewId = null;   // ← NEW: track which ad slot we're on
+(function () {
+    'use strict';
 
-// --- SHOW TADS AD ---
-function showTadsAd() {
-    if (typeof window.tads === 'undefined' || typeof window.tads.showWidget !== 'function') {
-        setStatus('❌ Ad service not ready.', 'error');
-        resetButton();
-        isAdPlaying = false;
-        return;
+    // ============================================================
+    // CONFIGURATION
+    // ============================================================
+    const TADS_WIDGET_ID   = 12764;   // ⚠️ confirm this matches your zobo widget
+    const COOLDOWN_SECONDS = 60;
+
+    // ============================================================
+    // DOM ELEMENTS (TADS card = the "2" versions)
+    // ============================================================
+    const watchBtn        = document.getElementById('watchBtn2');
+    const statusMsg       = document.getElementById('statusMsg2');
+    const adRemaining     = document.getElementById('adRemaining2');
+    const countdownBox    = document.getElementById('countdownBox2');
+    const countdownNumber = document.getElementById('countdownNumber2');
+
+    // ============================================================
+    // STATE
+    // ============================================================
+    let telegramId        = null;
+    let telegramReady     = false;
+    let isAdPlaying       = false;
+    let countdownInterval = null;
+    let currentAdViewId   = null;
+
+    // ============================================================
+    // HELPERS
+    // ============================================================
+    function setStatus(text, type) {
+        if (!statusMsg) return;
+        statusMsg.textContent = text;
+        statusMsg.className   = 'status-msg2';
+        if (type) statusMsg.classList.add(type + '2');
     }
 
-    setStatus('⏳ Loading advertisement...', 'loading');
+    function resetButton() {
+        if (!watchBtn) return;
+        watchBtn.disabled   = false;
+        watchBtn.innerHTML  = '<i class="bi bi-play-circle-fill"></i> Watch Video';
+        isAdPlaying         = false;
+    }
 
-    try {
-        window.tads.showWidget({
-            id: TADS_WIDGET_ID,
-            onShowReward: async function (result) {
-                setStatus('✅ Ad completed! Granting reward...', 'success');
-                const ok = await grantRewardOnServer();
-                if (ok) {
-                    startCountdown();
-                } else {
-                    resetButton();
-                }
-                isAdPlaying = false;
-            },
-            onAdsNotFound: function () {
-                setStatus('❌ No ad available. Try again later.', 'error');
+    // ============================================================
+    // COUNTDOWN
+    // ============================================================
+    function startCountdown() {
+        if (countdownInterval) {
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+        }
+
+        let seconds = COOLDOWN_SECONDS;
+        if (countdownBox)    countdownBox.classList.remove('hidden2');
+        if (countdownNumber) countdownNumber.textContent = seconds;
+        if (watchBtn) {
+            watchBtn.disabled  = true;
+            watchBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Wait...';
+        }
+
+        countdownInterval = setInterval(function () {
+            seconds -= 1;
+            if (countdownNumber) countdownNumber.textContent = seconds;
+
+            if (seconds <= 0) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+                if (countdownBox) countdownBox.classList.add('hidden2');
                 resetButton();
-                isAdPlaying = false;
+                setStatus('Ready to watch another ad!', '');
             }
-        });
-    } catch (error) {
-        console.error('[TADS] Show error:', error);
-        setStatus('❌ Failed to show ad.', 'error');
-        resetButton();
-        isAdPlaying = false;
+        }, 1000);
     }
-}
 
-// --- DJANGO BACKEND CALL ---
-async function grantRewardOnServer() {
-    try {
-        const response = await fetch("{% url 'Task:tads_postback' %}", {   // ← FIXED URL
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": "{{ csrf_token }}"
-            },
-            body: JSON.stringify({
-                telegram_id: telegramId,
-                ad_view_id: currentAdViewId   // ← NEW: precise matching
-            })
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            setStatus(`✅ Earned ${data.reward} points!`, 'success');
-            return true;
-        } else {
-            setStatus(`❌ ${data.error || 'Reward failed'}`, 'error');
+    // ============================================================
+    // CONNECT TELEGRAM USER
+    // ============================================================
+    async function connectTelegramUser() {
+        if (!window.Telegram || !window.Telegram.WebApp) {
+            setStatus('❌ Please open this page inside Telegram.', 'error');
             return false;
         }
-    } catch (error) {
-        console.error("Reward grant failed:", error);
-        setStatus('❌ Network error crediting reward.', 'error');
-        return false;
+
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+
+        const telegramUser = tg.initDataUnsafe && tg.initDataUnsafe.user;
+        if (!telegramUser || !telegramUser.id) {
+            setStatus('❌ Telegram user information not found.', 'error');
+            return false;
+        }
+
+        telegramId = String(telegramUser.id);
+        console.log('[App] Telegram ID:', telegramId);
+
+        try {
+            const response = await fetch("{% url 'Task:save_telegram_id' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ telegram_id: telegramId })
+            });
+
+            const raw = await response.text();
+            let data;
+            try { data = JSON.parse(raw); }
+            catch { throw new Error('Server returned invalid response: ' + raw.substring(0, 300)); }
+
+            if (!response.ok) throw new Error(data.error || 'Unable to save Telegram ID');
+
+            telegramReady = true;
+            console.log('[App] Telegram connected:', data);
+            return true;
+
+        } catch (err) {
+            console.error('[App] Telegram save error:', err);
+            setStatus('❌ Unable to connect Telegram account.', 'error');
+            return false;
+        }
     }
-}
 
-// --- TRIGGER AD (now calls request_ad_slot FIRST) ---
-async function triggerAd() {
-    if (!telegramReady || !telegramId) {
-        setStatus('❌ Telegram account not connected.', 'error');
-        return;
+    // ============================================================
+    // INITIALIZE TADS
+    // ============================================================
+    function initializeTads() {
+        try {
+            if (typeof window.tads !== 'undefined' && typeof window.tads.init === 'function') {
+                window.tads.init();
+                console.log('[TADS] Initialized.');
+                return true;
+            }
+            console.warn('[TADS] SDK not loaded.');
+            setStatus('⚠️ Ad service unavailable.', 'error');
+            return false;
+        } catch (err) {
+            console.error('[TADS] Init error:', err);
+            setStatus('⚠️ Ad service error.', 'error');
+            return false;
+        }
     }
-    if (isAdPlaying || watchBtn.disabled) return;
 
-    isAdPlaying = true;
-    watchBtn.disabled = true;
-    watchBtn.innerHTML = '<i class="bi bi-arrow-repeat"></i> Loading...';
-
-    // Step 1: create pending ad slot on backend
-    try {
-        const resp = await fetch("{% url 'Task:request_ad_slot' %}", {
-            method: 'GET',
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        });
-        const data = await resp.json();
-
-        if (!resp.ok || data.error) {
-            setStatus('❌ ' + (data.message || 'Unable to start ad.'), 'error');
-            if (data.remaining !== undefined) adRemaining.textContent = data.remaining;
+    // ============================================================
+    // SHOW TADS AD
+    // ============================================================
+    function showTadsAd() {
+        if (typeof window.tads === 'undefined' || typeof window.tads.showWidget !== 'function') {
+            setStatus('❌ Ad service not ready.', 'error');
             resetButton();
-            isAdPlaying = false;
             return;
         }
 
-        currentAdViewId = data.ad_view_id;
-        if (data.remaining !== undefined) adRemaining.textContent = data.remaining;
+        setStatus('⏳ Loading advertisement...', 'loading');
 
-        // Step 2: now show the ad
-        showTadsAd();
-
-    } catch (err) {
-        console.error('Request slot error:', err);
-        setStatus('❌ Network error. Try again.', 'error');
-        resetButton();
-        isAdPlaying = false;
+        try {
+            window.tads.showWidget({
+                id: TADS_WIDGET_ID,
+                onShowReward: async function (result) {
+                    console.log('[TADS] onShowReward:', result);
+                    setStatus('✅ Ad completed! Granting reward...', 'success');
+                    const ok = await grantRewardOnServer();
+                    if (ok) {
+                        startCountdown();
+                    } else {
+                        resetButton();
+                    }
+                },
+                onAdsNotFound: function () {
+                    setStatus('❌ No ad available. Try again later.', 'error');
+                    resetButton();
+                }
+            });
+        } catch (err) {
+            console.error('[TADS] Show error:', err);
+            setStatus('❌ Failed to show ad.', 'error');
+            resetButton();
+        }
     }
-}
+
+    // ============================================================
+    // CALL BACKEND TO CREDIT WALLET
+    // ============================================================
+    async function grantRewardOnServer() {
+        try {
+            const response = await fetch("{% url 'Task:tads_postback' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    telegram_id: telegramId,
+                    ad_view_id:  currentAdViewId
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                setStatus('✅ Earned ' + data.reward + ' points!', 'success');
+                return true;
+            } else {
+                setStatus('❌ ' + (data.error || 'Reward failed'), 'error');
+                return false;
+            }
+        } catch (err) {
+            console.error('[App] Reward grant failed:', err);
+            setStatus('❌ Network error crediting reward.', 'error');
+            return false;
+        }
+    }
+
+    // ============================================================
+    // TRIGGER AD  (called on button click)
+    // ============================================================
+    async function triggerAd() {
+        if (!telegramReady || !telegramId) {
+            setStatus('❌ Telegram account not connected.', 'error');
+            return;
+        }
+        if (isAdPlaying || watchBtn.disabled) return;
+
+        isAdPlaying = true;
+        watchBtn.disabled = true;
+        watchBtn.innerHTML = '<i class="bi bi-arrow-repeat"></i> Loading...';
+
+        try {
+            // Step 1: create pending ad slot on backend
+            const resp = await fetch("{% url 'Task:request_ad_slot' %}", {
+                method: 'GET',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            const data = await resp.json();
+
+            if (!resp.ok || data.error) {
+                setStatus('❌ ' + (data.message || 'Unable to start ad.'), 'error');
+                if (data.remaining !== undefined && adRemaining) adRemaining.textContent = data.remaining;
+                resetButton();
+                return;
+            }
+
+            currentAdViewId = data.ad_view_id;
+            if (data.remaining !== undefined && adRemaining) adRemaining.textContent = data.remaining;
+
+            // Step 2: show the ad
+            showTadsAd();
+
+        } catch (err) {
+            console.error('[App] Request slot error:', err);
+            setStatus('❌ Network error. Try again.', 'error');
+            resetButton();
+        }
+    }
+
+    // ============================================================
+    // WIRE UP CLICK LISTENER  ← ⚠️ THIS WAS MISSING
+    // ============================================================
+    if (watchBtn) {
+        watchBtn.addEventListener('click', triggerAd);
+    } else {
+        console.error('[App] watchBtn2 not found in the DOM!');
+    }
+
+    // ============================================================
+    // STARTUP
+    // ============================================================
+    async function startApp() {
+        console.log('[App] Starting...');
+
+        if (watchBtn) {
+            watchBtn.disabled = true;
+            watchBtn.innerHTML = '<i class="bi bi-arrow-repeat"></i> Connecting...';
+        }
+        setStatus('🔄 Connecting Telegram account...', 'loading');
+
+        const connected = await connectTelegramUser();
+        if (!connected) {
+            if (watchBtn) {
+                watchBtn.disabled = true;
+                watchBtn.innerHTML = '❌ Telegram Required';
+            }
+            return;
+        }
+
+        const tadsReady = initializeTads();
+        if (!tadsReady) {
+            if (watchBtn) {
+                watchBtn.disabled = true;
+                watchBtn.innerHTML = '❌ Ad Service Unavailable';
+            }
+            return;
+        }
+
+        resetButton();
+        setStatus('Ready to watch an ad!', '');
+        console.log('[App] Ready.');
+    }
+
+    window.addEventListener('DOMContentLoaded', startApp);
+
+})();
 </script>
 
 
