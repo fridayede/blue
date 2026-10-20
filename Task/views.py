@@ -371,7 +371,7 @@ User = get_user_model()
 
 User = get_user_model()
 
-MAX_ADS_PER_DAY = 30
+MAX_ADS_PER_DAY = 3000
 
 # How long a pending ad token remains valid
 TOKEN_TTL_SECONDS = 60 * 30  # 30 minutes
@@ -417,39 +417,64 @@ def request_ad_slot(request):
 
 # ============================================================
 # 2. ADSGRAM REWARD CALLBACK
-# ============================================================
+import json
+import logging
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+
+logger = logging.getLogger(__name__)
+
 @csrf_exempt
 def tads_postback(request):
-    # ... parse telegram_id ...
+    try:
+        # 1. Read params — TADS may send GET or POST, form or JSON
+        if request.method == 'POST':
+            if request.content_type == 'application/json':
+                data = json.loads(request.body or '{}')
+            else:
+                data = request.POST
+        else:
+            data = request.GET
 
-    with transaction.atomic():
-        user = User.objects.select_for_update().get(telegram_id=telegram_id)
+        # 2. Extract telegram_id — use whatever name TADS sends
+        telegram_id = data.get('telegram_id') or data.get('user_id') or data.get('sub_id')
+        if not telegram_id:
+            logger.warning("TADS postback missing telegram_id: %s", dict(data))
+            # Return 200 anyway — a 500 makes TADS retry forever
+            return JsonResponse({"success": False, "error": "missing telegram_id"}, status=200)
 
-        # Get the *newest* pending ad, not the oldest
-        ad = Adsview.objects.select_for_update().filter(
-            user=user, status="pending"
-        ).order_by("-created_at").first()
+        # 3. Look up user safely
+        try:
+            user = User.objects.get(telegram_id=telegram_id)
+        except User.DoesNotExist:
+            logger.warning("TADS postback: unknown telegram_id=%s", telegram_id)
+            return JsonResponse({"success": False, "error": "user not found"}, status=200)
 
-        if not ad:
-            # No pending ad — could be a retry or stale call
-            return JsonResponse({"success": True, "duplicate": True, "reward": 0})
+        with transaction.atomic():
+            ad = (Adsview.objects
+                  .select_for_update()
+                  .filter(user=user, status="pending")
+                  .order_by("-created_at")
+                  .first())
 
-        if ad.status == "completed":
-            # Already credited
-            return JsonResponse({"success": True, "duplicate": True, "reward": ad.reward})
+            if not ad:
+                return JsonResponse({"success": True, "duplicate": True, "reward": 0})
 
-        # Credit the wallet
-        ad.status = "completed"
-        ad.reward = ADS_REWARD
-        ad.completed_at = timezone.now()
-        ad.save()
+            ad.status = "completed"
+            ad.reward = ADS_REWARD
+            ad.completed_at = timezone.now()
+            ad.save()
 
-        wallet, _ = UserWallet.objects.get_or_create(user=user)
-        wallet.balance += ADS_REWARD
-        wallet.save()
+            wallet, _ = UserWallet.objects.get_or_create(user=user)
+            wallet.balance += ADS_REWARD
+            wallet.save()
 
         return JsonResponse({"success": True, "reward": ADS_REWARD})
 
+    except Exception as e:
+        # NEVER return 500 — log it, return 200 so TADS stops retrying
+        logger.exception("TADS postback crashed: %s", e)
+        return JsonResponse({"success": False, "error": "internal"}, status=200)
 # def adsgram_postback(request):
 #     print("🔥 ADSGRAM POSTBACK HIT")
 #     print(request.GET.dict())
