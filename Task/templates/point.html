@@ -296,6 +296,9 @@
             }
 
             setStatus('⏳ Loading advertisement...', 'loading');
+            console.log('[TADS] Showing widget:', TADS_WIDGET_ID);
+            console.log('[TADS] Methods available:', Object.keys(window.tads));
+            console.log('[TADS] SDK loaded?', typeof window.tads.showWidget);
 
             try {
                 window.tads.showWidget({
