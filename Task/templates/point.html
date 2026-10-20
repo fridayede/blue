@@ -289,44 +289,38 @@
 
         // ---------- SHOW AD ----------
         function showTadsAd() {
-            if (typeof window.tads === 'undefined' || typeof window.tads.showWidget !== 'function') {
-                setStatus('❌ Ad SDK not ready.', 'error');
-                resetButton();
-                return;
-            }
+    // Ensure the TADS script has loaded
+    if (typeof TadsWidget === 'undefined') {
+        setStatus('❌ Ad SDK not loaded.', 'error');
+        resetButton();
+        return;
+    }
 
-            setStatus('⏳ Loading advertisement...', 'loading');
-            console.log('[TADS] Showing widget:', TADS_WIDGET_ID);
-            console.log('[TADS] Methods available:', Object.keys(window.tads));
-            console.log('[TADS] SDK loaded?', typeof window.tads.showWidget);
+    setStatus('⏳ Loading advertisement...', 'loading');
 
-            try {
-                window.tads.showWidget({
-                    id: TADS_WIDGET_ID,
-                    onShowReward: async function (result) {
-                        console.log('[TADS] onShowReward:', result);
-                        setStatus('✅ Ad completed! Granting reward...', 'success');
-                        const ok = await grantRewardOnServer();
-                        if (ok) startCountdown();
-                        else    resetButton();
-                    },
-                    onAdsNotFound: function () {
-                        console.log('[TADS] onAdsNotFound');
-                        setStatus('❌ No ad available. Try again later.', 'error');
-                        resetButton();
-                    },
-                    onError: function (err) {
-                        console.error('[TADS] onError:', err);
-                        setStatus('❌ Ad error: ' + (err && err.message ? err.message : 'unknown'), 'error');
-                        resetButton();
-                    }
-                });
-            } catch (err) {
-                console.error('[TADS] showWidget threw:', err);
-                setStatus('❌ Failed to show ad.', 'error');
-                resetButton();
-            }
+    // Clear any previous widget instance
+    const container = document.getElementById('tads-widget-container');
+    if (container) container.innerHTML = '';
+
+    // Create and configure the widget
+    const widget = new TadsWidget({
+        id: TADS_WIDGET_ID,
+        debug: false,
+        onShowReward: async (result) => {
+            console.log('[TADS] Reward:', result);
+            setStatus('✅ Ad completed! Granting reward...', 'success');
+            const ok = await grantRewardOnServer();
+            if (ok) startCountdown(); else resetButton();
+        },
+        onAdsNotFound: () => {
+            setStatus('❌ No ad available. Try again later.', 'error');
+            resetButton();
         }
+    });
+
+    // Mount it to the page
+    widget.mount(document.getElementById('tads-widget-container'));
+}
 
         // ---------- GRANT REWARD ----------
         async function grantRewardOnServer() {
