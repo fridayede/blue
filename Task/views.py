@@ -420,47 +420,35 @@ def request_ad_slot(request):
 # ============================================================
 @csrf_exempt
 def tads_postback(request):
-    if request.method != "POST":
-        return JsonResponse({"error": "POST required"}, status=405)
+    # ... parse telegram_id ...
 
-    try:
-        data = json.loads(request.body)
-        telegram_id = data.get("telegram_id") or data.get("user_id")
-        ad_view_id = data.get("ad_view_id")
-        # If TADS includes a signature field, verify it here (see dashboard docs)
+    with transaction.atomic():
+        user = User.objects.select_for_update().get(telegram_id=telegram_id)
 
-        if not telegram_id:
-            return JsonResponse({"error": "Missing telegram_id"}, status=400)
+        # Get the *newest* pending ad, not the oldest
+        ad = Adsview.objects.select_for_update().filter(
+            user=user, status="pending"
+        ).order_by("-created_at").first()
 
-        with transaction.atomic():
-            user = User.objects.select_for_update().get(telegram_id=int(telegram_id))
+        if not ad:
+            # No pending ad — could be a retry or stale call
+            return JsonResponse({"success": True, "duplicate": True, "reward": 0})
 
-            # Prefer matching by ad_view_id if provided
-            qs = Adsview.objects.select_for_update().filter(user=user, status="pending")
-            if ad_view_id:
-                ad = qs.filter(id=ad_view_id).first()
-            else:
-                ad = qs.order_by("created_at").first()
+        if ad.status == "completed":
+            # Already credited
+            return JsonResponse({"success": True, "duplicate": True, "reward": ad.reward})
 
-            if not ad:
-                return JsonResponse({"error": "No pending ad found"}, status=404)
+        # Credit the wallet
+        ad.status = "completed"
+        ad.reward = ADS_REWARD
+        ad.completed_at = timezone.now()
+        ad.save()
 
-            ad.status = "completed"
-            ad.reward = ADS_REWARD
-            ad.completed_at = timezone.now()
-            ad.save()
-
-            wallet, _ = UserWallet.objects.get_or_create(user=user)
-            wallet.balance += ADS_REWARD
-            wallet.save()
+        wallet, _ = UserWallet.objects.get_or_create(user=user)
+        wallet.balance += ADS_REWARD
+        wallet.save()
 
         return JsonResponse({"success": True, "reward": ADS_REWARD})
-
-    except User.DoesNotExist:
-        return JsonResponse({"error": "Telegram user not found"}, status=404)
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=400)
-
 
 # def adsgram_postback(request):
 #     print("🔥 ADSGRAM POSTBACK HIT")

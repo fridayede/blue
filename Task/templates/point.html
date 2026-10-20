@@ -150,12 +150,12 @@
     <!-- ============================================================ -->
     <!-- TADS AD SCRIPT — the ONLY ad script on this page             -->
     <!-- ============================================================ -->
-  <script>
+ <script>
     (function () {
         'use strict';
 
         // ---------- CONFIG ----------
-        const TADS_WIDGET_ID   = 12764;   // ⚠️ confirm this matches your zobo widget in the dashboard
+        const TADS_WIDGET_ID   = 12764;   // ⚠️ Confirm this matches your zobo widget in the dashboard
         const COOLDOWN_SECONDS = 60;
 
         // ---------- DOM ----------
@@ -172,7 +172,7 @@
         let isAdPlaying       = false;
         let countdownInterval = null;
         let currentAdViewId   = null;
-        let adController      = null;   // ✅ declared
+        let adController      = null;
 
         // ---------- HELPERS ----------
         function setStatus(text, type) {
@@ -339,34 +339,14 @@
                 });
         }
 
-        // ---------- GRANT REWARD ----------
+        // ---------- GRANT REWARD (WEBHOOK-ONLY) ----------
+        // This function no longer credits the wallet directly.
+        // The TADS webhook (server-to-server) will credit the wallet.
         async function grantRewardOnServer() {
-            try {
-                const response = await fetch("{% url 'Task:tads_postback' %}", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': '{{ csrf_token }}'
-                    },
-                    body: JSON.stringify({
-                        telegram_id: telegramId,
-                        ad_view_id:  currentAdViewId
-                    })
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    setStatus('✅ Earned ' + data.reward + ' points!', 'success');
-                    return true;
-                }
-                setStatus('❌ ' + (data.error || 'Reward failed'), 'error');
-                return false;
-            } catch (err) {
-                console.error('[App] Reward grant failed:', err);
-                setStatus('❌ Network error crediting reward.', 'error');
-                return false;
-            }
+            setStatus('✅ Ad completed! Reward will arrive shortly…', 'success');
+            // Wait 2 seconds to give the TADS webhook time to reach your backend
+            await sleep(2000);
+            return true;
         }
 
         // ---------- TRIGGER ----------
